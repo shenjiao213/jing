@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="#fff0f5" name="theme-color"/>
+<title>京莹机</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #fff0f5; color: #000; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans SC", sans-serif; overscroll-behavior: none; }
+  
+  #desktop {
+    position: fixed; inset: 0; height: 100dvh; display: flex; flex-direction: column;
+    padding-top: calc(env(safe-area-inset-top) + 10px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
+  }
+
+  .wallpaper { position: absolute; inset: 0; z-index: -1; background: #fff0f5; }
+  .wallpaper img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+  /* 页面网格 */
+  .pages { flex: 1; position: relative; overflow: hidden; touch-action: pan-y; }
+  .page {
+    position: absolute; inset: 0;
+    display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(8, 1fr);
+    padding: 0 12px; gap: 4px 2px;
+    opacity: 0; pointer-events: none; transform: translateX(10%);
+    transition: opacity .2s ease, transform .25s ease;
+  }
+  .page.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
+  .slot { position: relative; display: flex; align-items: flex-start; justify-content: center; }
+
+  /* 图标与文字 */
+  .app {
+    width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;
+    padding-top: 5px; cursor: grab; transition: opacity .15s;
+    touch-action: none; /* 防止拖拽时触发浏览器原生行为 */
+  }
+  .app.dragging { opacity: .2; }
+  
+  /* 纯黑图标，带浅色阴影防止深色壁纸下看不清 */
+  .icon { width: 32px; height: 32px; fill: none; stroke: #000; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 3px rgba(255,255,255,.95)); pointer-events: none; }
+  .label { font-size: 11px; font-weight: 600; margin-top: 4px; text-shadow: 0 1px 4px rgba(255,255,255,.95), 0 0 2px rgba(255,255,255,.8); pointer-events: none; }
+
+  /* 底部区域（分页点 + 透明Dock） */
+  .bottom-area { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  
+  .page-nav { display: flex; gap: 8px; height: 12px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(0,0,0,.2); transition: background .2s; cursor: pointer; }
+  .dot.active { background: rgba(0,0,0,.8); }
+
+  .dock { display: grid; grid-template-columns: repeat(3, 1fr); width: 75%; max-width: 300px; height: 70px; }
+  .dock .app { padding-top: 0; justify-content: center; }
+  .dock .icon { width: 34px; height: 34px; }
+  .dock .label { display: none; }
+
+  /* 拖拽残影 */
+  .drag-ghost { position: fixed; z-index: 100; width: 64px; pointer-events: none; transform: translate(-50%, -50%) scale(1.1); opacity: 0.85; display: flex; flex-direction: column; align-items: center; }
+</style>
+</head>
+<body>
+<main id="desktop">
+  <div class="wallpaper"><img id="wallpaper" referrerpolicy="no-referrer" draggable="false" alt=""/></div>
+  
+  <div class="pages" id="pages"></div>
+  
+  <div class="bottom-area">
+    <nav class="page-nav" id="pageNav"></nav>
+    <footer class="dock" id="dock"></footer>
+  </div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const APPS = {
+    archive: { name: '档案馆', path: '<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/>' },
+    beauty: { name: '美化', path: '<path d="M12 3a9 9 0 1 0 0 18h1.2a2 2 0 0 0 1.5-3.3 1.8 1.8 0 0 1 1.4-3h1.4A3.5 3.5 0 0 0 21 11.2C21 6.7 17 3 12 3Z"/><circle cx="7.5" cy="10" r="1"/><circle cx="10" cy="6.8" r="1"/><circle cx="15" cy="7.5" r="1"/>' },
+    settings: { name: '设置', path: '<circle cx="12" cy="12" r="3.2"/><path d="m19.4 13.5 1.1.9-1.7 3-1.4-.5a7.7 7.7 0 0 1-1.7 1l-.3 1.5h-3.5l-.3-1.5a7.7 7.7 0 0 1-1.7-1l-1.4.5-1.7-3 1.1-.9a7 7 0 0 1 0-2l-1.1-.9 1.7-3 1.4.5a7.7 7.7 0 0 1 1.7-1l.3-1.5h3.5l.3 1.5a7.7 7.7 0 0 1 1.7 1l1.4-.5 1.7 3-1.1.9a7 7 0 0 1 0 2Z" transform="translate(-1 -1) scale(1.08)"/>' }
+  };
+
+  const GRID = 32, PAGES = 3, DOCK = 3, KEY = 'jingying_desktop_v5';
+  
+  let layout = { pages: Array.from({ length: PAGES }, () => Array(GRID).fill(null)), dock: Array(DOCK).fill(null) };
+  let activePage = 0, dragData = null, pressTimer = null, startPos = null;
+
+  const $ = id => document.getElementById(id);
+  const pagesEl = $('pages'), dockEl = $('dock'), navEl = $('pageNav');
+
+  // 初始化壁纸
+  $('wallpaper').src = 'https://imgbed.heliar.top/i/eGpOL2arseVsljPT_Image_1794980194111_943.png';
+  $('wallpaper').onerror = function() { this.style.display = 'none'; };
+
+  // 读取缓存并严格校验（防脏数据）
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY));
+    if (saved?.pages?.length === PAGES && saved?.dock?.length === DOCK) {
+      // 过滤掉已经被删除的 App ID
+      layout.pages = saved.pages.map(page => page.map(id => (id && APPS[id]) ? id : null));
+      layout.dock = saved.dock.map(id => (id && APPS[id]) ? id : null);
+    } else { throw new Error(); }
+  } catch {
+    layout.pages[0][0] = 'archive';
+    layout.dock[0] = 'beauty';
+    layout.dock[1] = 'settings';
+  }
+
+  // 渲染组件
+  function createAppNode(id) {
+    const el = document.createElement('div');
+    el.className = 'app';
+    el.dataset.id = id;
+    el.innerHTML = `<svg class="icon" viewBox="0 0 24 24">${APPS[id].path}</svg><span class="label">${APPS[id].name}</span>`;
+    return el;
+  }
+
+  function render() {
+    pagesEl.innerHTML = '';
+    layout.pages.forEach((slots, pageIdx) => {
+      const page = document.createElement('div');
+      page.className = `page ${pageIdx === activePage ? 'active' : ''}`;
+      page.dataset.page = pageIdx;
+      slots.forEach((id, idx) => {
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.dataset.index = idx;
+        if (id) slot.appendChild(createAppNode(id));
+        page.appendChild(slot);
+      });
+      pagesEl.appendChild(page);
+    });
+
+    dockEl.innerHTML = '';
+    layout.dock.forEach((id, idx) => {
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.dataset.index = idx;
+      if (id) slot.appendChild(createAppNode(id));
+      dockEl.appendChild(slot);
+    });
+
+    navEl.innerHTML = '';
+    for (let i = 0; i < PAGES; i++) {
+      const dot = document.createElement('div');
+      dot.className = `dot ${i === activePage ? 'active' : ''}`;
+      dot.addEventListener('pointerdown', (e) => { 
+        e.stopPropagation(); 
+        activePage = i; 
+        render(); 
+      });
+      navEl.appendChild(dot);
+    }
+  }
+
+  const save = () => localStorage.setItem(KEY, JSON.stringify(layout));
+
+  // 交互逻辑
+  document.addEventListener('pointerdown', e => {
+    if (dragData) return; // 忽略多指干扰
+
+    const app = e.target.closest('.app');
+    if (!app) {
+      if (e.target.closest('.pages')) {
+        startPos = { id: null, x: e.clientX, y: e.clientY, pointerId: e.pointerId }; 
+      }
+      return;
+    }
+
+    const { id } = app.dataset;
+    startPos = { id, x: e.clientX, y: e.clientY, pointerId: e.pointerId, isDock: dockEl.contains(app) };
+    clearTimeout(pressTimer);
+    
+    pressTimer = setTimeout(() => {
+      if (!startPos) return;
+      dragData = { id, isDock: startPos.isDock, el: app };
+      app.classList.add('dragging');
+      
+      const ghost = createAppNode(id);
+      ghost.className = 'drag-ghost';
+      ghost.id = 'dragGhost';
+      ghost.style.left = startPos.x + 'px';
+      ghost.style.top = startPos.y + 'px';
+      document.body.appendChild(ghost);
+    }, 200); // 稍微降低长按触发时间，手感更好
+  });
+
+  document.addEventListener('pointermove', e => {
+    if (!startPos || e.pointerId !== startPos.pointerId) return;
+    
+    if (!dragData) {
+      // 滑动超过 8px 取消长按
+      if (Math.hypot(startPos.x - e.clientX, startPos.y - e.clientY) > 8) {
+        clearTimeout(pressTimer);
+      }
+    } else {
+      // 拖拽中
+      e.preventDefault();
+      const ghost = $('dragGhost');
+      if (ghost) { 
+        ghost.style.left = e.clientX + 'px'; 
+        ghost.style.top = e.clientY + 'px'; 
+      }
+    }
+  }, { passive: false });
+
+  document.addEventListener('pointerup', e => {
+    if (!startPos || e.pointerId !== startPos.pointerId) return;
+    clearTimeout(pressTimer);
+
+    if (dragData) {
+      // 放置处理
+      const ghost = $('dragGhost');
+      if (ghost) ghost.remove();
+      dragData.el.classList.remove('dragging');
+      
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const slot = el?.closest('.slot');
+      
+      if (slot) {
+        const isTargetDock = dockEl.contains(slot);
+        const targetIdx = parseInt(slot.dataset.index);
+        const sourceArray = dragData.isDock ? layout.dock : layout.pages[activePage];
+        const targetArray = isTargetDock ? layout.dock : layout.pages[activePage];
+        
+        const sourceIdx = sourceArray.indexOf(dragData.id);
+        if (sourceIdx > -1) {
+          const displaced = targetArray[targetIdx];
+          targetArray[targetIdx] = dragData.id;
+          sourceArray[sourceIdx] = displaced;
+          save();
+        }
+      }
+      render();
+      dragData = null;
+    } 
+    else if (!startPos.id) {
+      // 空白处滑动切页
+      const dx = e.clientX - startPos.x, dy = e.clientY - startPos.y;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        activePage = Math.max(0, Math.min(PAGES - 1, activePage + (dx < 0 ? 1 : -1)));
+        render();
+      }
+    }
+    startPos = null;
+  });
+
+  document.addEventListener('pointercancel', () => {
+    clearTimeout(pressTimer);
+    const ghost = $('dragGhost');
+    if (ghost) ghost.remove();
+    if (dragData?.el) dragData.el.classList.remove('dragging');
+    dragData = null; startPos = null;
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
