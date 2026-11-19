@@ -3,8 +3,7 @@
 <html class="jing-booting" lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
-
-<script id="jing-theme-prepaint-script" data-owner="beautify">
+<script data-owner="beautify" id="jing-theme-prepaint-script">
 (function () {
   try {
     var themes = {
@@ -38,15 +37,15 @@
 </script>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <!-- 非阻塞字体加载：先显示系统后备字体，字体下载完成后自动替换 -->
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai&family=Parisienne&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'"/>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&display=swap" media="print" onload="this.media='all'"/>
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai&family=Parisienne&family=Noto+Serif+SC:wght@400;500;600;700&display=swap"/></noscript>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai&amp;family=Parisienne&amp;family=Noto+Serif+SC:wght@400;500;600;700&amp;display=swap" media="print" onload="this.media='all'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&amp;display=swap" media="print" onload="this.media='all'" rel="stylesheet"/>
+<noscript></noscript>
 <meta content="#e7e7e5" name="theme-color"/>
 <title>京莹机</title>
 <meta content="京莹机本地应用。" name="description"/>
-<script id="jing-desktop-widgets-storage-compat-v1" data-owner="desktop-widgets">
+<script data-owner="desktop-widgets" id="jing-desktop-widgets-storage-compat-v1">
 try {
   const hadV5 = localStorage.getItem('jing-widget-layout-v5') === '1';
   const seeds = [
@@ -102,14 +101,35 @@ try {
   }
 } catch (_) {}
 </script>
-<script id="jing-requested-defaults-migration-v1">
+<script id="jing-requested-defaults-migration-v4">
+/* Replace the requested defaults once for existing v3 installs, and wait for
+   wallpaper-only cache cleanup to finish. Other application storage is untouched. */
 (function () {
+  var DESKTOP = 'https://imgbed.heliar.top/i/p5fDvUnOU-n7jXBd_IMG_20261119_162237.jpg';
+  var LOCK = 'https://imgbed.heliar.top/i/4tLM6_DF9XA9Ltv1_IMG_20261119_162227.jpg';
   try {
-    if (localStorage.getItem('jing-requested-defaults-v1') === '1') return;
-    localStorage.setItem('jing-wallpaper', 'https://imgbed.heliar.top/i/e9-3d_diTPvM6QU8_IMG_20261116_225242.jpg');
-    localStorage.setItem('jing-lock-wallpaper', 'https://imgbed.heliar.top/i/e9-3d_diTPvM6QU8_IMG_20261116_225242.jpg');
-    localStorage.setItem('jing-theme', 'fogBlue');
-    localStorage.setItem('jing-requested-defaults-v1', '1');
+    if (localStorage.getItem('jing-requested-defaults-v4') !== '1') {
+      localStorage.setItem('jing-wallpaper', DESKTOP);
+      localStorage.setItem('jing-lock-wallpaper', LOCK);
+      localStorage.setItem('jing-requested-defaults-v4', '1');
+    }
+  } catch (_) {}
+  try {
+    if (!window.indexedDB) return;
+    var req = indexedDB.open('jing-wallpaper-media');
+    req.onsuccess = function () {
+      var db = req.result;
+      if (!db.objectStoreNames.contains('media')) { db.close(); return; }
+      try {
+        var tx = db.transaction('media', 'readwrite');
+        var store = tx.objectStore('media');
+        store.delete('motion');
+        store.delete('wallpaper-image');
+        tx.oncomplete = function () { db.close(); };
+        tx.onerror = tx.onabort = function () { db.close(); };
+      } catch (_) { try { db.close(); } catch (e) {} }
+    };
+    req.onerror = function () {};
   } catch (_) {}
 })();
 </script>
@@ -117,7 +137,7 @@ try {
 (function () {
   try {
     var saved = localStorage.getItem('jing-wallpaper');
-    var source = saved && saved.trim() ? saved.trim() : 'https://imgbed.heliar.top/i/kTy3Q-dQKMmK_rhe_IMG_20261020_225243.jpg';
+    var source = saved && saved.trim() ? saved.trim() : 'https://imgbed.heliar.top/i/p5fDvUnOU-n7jXBd_IMG_20261119_162237.jpg';
     if (/^(?:idb:|data:|blob:)/i.test(source) || /\.(?:mp4|webm|mov|m4v|ogv)(?:[?#].*)?$/i.test(source) || /[?&](?:format|fm)=(?:mp4|webm|mov)(?:&|$)/i.test(source)) return;
     var url = new URL(source, location.href);
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
@@ -4004,8 +4024,8 @@ button.jb-beauty-back::before,button.jb-beauty-back::after,button.jdw-settings-b
 #reading-screen .reader-idea-avatar{background:color-mix(in srgb,var(--theme-accent) 16%,var(--theme-card))!important;color:var(--theme-text)!important;border:1px solid var(--theme-border)!important;overflow:hidden;object-fit:cover}
 #reading-screen .reader-idea-avatar:not(img){display:grid;place-items:center}
 #reading-screen #reader-authoring-btn[hidden]{display:none!important}
-#reading-screen .reader-coread-dock-head{cursor:grab!important;touch-action:none!important;user-select:none!important;-webkit-user-select:none!important}
-#reading-screen .reader-coread-dock-head:active{cursor:grabbing!important}
+
+
 
 /* 阅读分享联系人选择器：独立命名空间，避免继承聊天联系人列表及全局表单样式。 */
 #reading-ai-modal-root .rai-share-intro{margin:7px 0 12px;color:var(--theme-text-muted,#858585);font-size:13px;line-height:1.55;}
@@ -8032,7 +8052,7 @@ input[type="range"] { accent-color: var(--theme-accent); }
 #reading-screen .reader-coread-start{padding:7px 9px;font-size:9px}
 #reading-screen .reader-coread-dock-foot{padding:0 8px 7px;font-size:8px}
 #reading-screen .reader-coread-dock.collapsed{width:auto;min-width:145px;max-width:calc(100vw - 18px)}
-#reading-screen .reader-coread-dock[hidden]{display:none!important}
+
 #reading-screen .reader-coread-composer[hidden]{display:none!important}
 @media(max-width:380px){#reading-screen .reader-coread-dock{width:min(252px,calc(100vw - 14px));right:7px;bottom:68px;max-height:36dvh}#reading-screen .reader-coread-chat-list{max-height:104px}#reading-screen .reader-coread-composer{gap:4px}#reading-screen .reader-coread-composer button{padding:0 6px}}
 
@@ -9147,55 +9167,38 @@ body :is(
 
 
 /* 线下选人页：横向眼睛条视觉；保留主题变量、字体继承和纯平面设计。 */
-#jingOfflineScreens .os-roles-intro{padding:26px 20px 12px!important}
 #jingOfflineScreens .os-kicker{font-size:9px!important;letter-spacing:.2em!important;margin-bottom:9px!important}
 #jingOfflineScreens .os-hero-title{font-size:25px!important;line-height:1.3!important;letter-spacing:.02em!important}
 #jingOfflineScreens .os-hero-sub{margin-top:6px!important;font-size:12px!important}
-#jingOfflineScreens .os-roles{gap:13px!important;padding:12px 15px 24px!important;max-width:820px!important}
-#jingOfflineScreens .os-role{
  position:relative!important;isolation:isolate!important;display:block!important;
  width:100%!important;height:132px!important;min-height:132px!important;flex:none!important;
  padding:0!important;overflow:hidden!important;border:1px solid color-mix(in srgb,var(--os-accent) 34%,var(--os-line))!important;
  border-radius:72px 17px 17px 72px!important;background:var(--os-panel)!important;
  text-align:left!important;box-shadow:none!important;transform:none!important;
 }
-#jingOfflineScreens .os-role .portrait{
  position:absolute!important;inset:0!important;z-index:-2!important;display:block!important;
  width:100%!important;height:100%!important;aspect-ratio:auto!important;flex:none!important;
  border:0!important;border-radius:inherit!important;background:var(--os-panel-2)!important;overflow:hidden!important;
 }
-#jingOfflineScreens .os-role img{
  display:block!important;width:100%!important;height:100%!important;max-width:none!important;
  object-fit:cover!important;object-position:70% 29%!important;border-radius:0!important;
 }
-#jingOfflineScreens .os-role .fallback{
  width:100%!important;height:100%!important;border-radius:0!important;
  display:grid!important;place-items:center!important;background:var(--os-panel-2)!important;
  color:var(--os-accent)!important;font-size:48px!important;
 }
-#jingOfflineScreens .os-role::before{
  content:""!important;position:absolute!important;inset:0!important;z-index:-1!important;pointer-events:none!important;
  background:linear-gradient(90deg,var(--os-bg) 0%,color-mix(in srgb,var(--os-bg) 88%,transparent) 27%,color-mix(in srgb,var(--os-bg) 18%,transparent) 57%,transparent 78%)!important;
 }
-#jingOfflineScreens .os-role strong{
  position:absolute!important;left:7%!important;top:50%!important;transform:translateY(-50%)!important;
  display:block!important;width:43%!important;min-width:0!important;padding:0!important;margin:0!important;
  color:var(--os-text)!important;font-size:22px!important;font-weight:650!important;letter-spacing:.08em!important;
  line-height:1.35!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
  text-align:left!important;
 }
-#jingOfflineScreens .os-role:nth-child(even){border-radius:17px 72px 72px 17px!important}
-#jingOfflineScreens .os-role:nth-child(even) img{object-position:30% 29%!important}
-#jingOfflineScreens .os-role:nth-child(even)::before{
  background:linear-gradient(270deg,var(--os-bg) 0%,color-mix(in srgb,var(--os-bg) 88%,transparent) 27%,color-mix(in srgb,var(--os-bg) 18%,transparent) 57%,transparent 78%)!important;
 }
-#jingOfflineScreens .os-role:nth-child(even) strong{left:auto!important;right:7%!important;text-align:right!important}
-#jingOfflineScreens .os-role:active{border-color:var(--os-accent)!important;background:var(--os-panel)!important}
-#jingOfflineScreens .os-role::after{content:none!important;display:none!important}
 @media(max-width:380px){
- #jingOfflineScreens .os-role{height:116px!important;min-height:116px!important}
- #jingOfflineScreens .os-role strong{font-size:19px!important;width:45%!important}
- #jingOfflineScreens .os-roles{padding-left:12px!important;padding-right:12px!important;gap:11px!important}
 }
 
 
@@ -9318,15 +9321,11 @@ img[class*="portrait" i]:not(.avatar-crop-stage img),
 .archive-dossier-portrait img {
   object-position:initial;
 }
-
 </style>
-
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
-
-<script id="jing-beautify-dock-runtime-v1" data-owner="beautify">
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Parisienne&amp;display=swap" rel="stylesheet"/>
+<script data-owner="beautify" id="jing-beautify-dock-runtime-v1">
 document.addEventListener('DOMContentLoaded',()=>{
   'use strict';
   const jingBeautifyDockDesktop=document.getElementById('desktop');
@@ -9377,9 +9376,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   applyJingBeautifyDockSettings();
 });
 </script>
-
-
-<link id="jing-icon-favicon-v2" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%3E%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2229%22%20fill%3D%22%23f5f4ef%22%2F%3E%3Cpath%20d%3D%22M38%2034H91L51%2064L91%2094H38%22%20fill%3D%22none%22%20stroke%3D%22%23596e61%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M38%20105H90%22%20stroke%3D%22%238b9185%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2299%22%20cy%3D%2227%22%20r%3D%223.5%22%20fill%3D%22%23b78b78%22%2F%3E%3Ctext%20x%3D%2294%22%20y%3D%22112%22%20fill%3D%22%23596e61%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2210%22%20font-style%3D%22italic%22%3Ex%E1%B5%A2%3C%2Ftext%3E%3C%2Fsvg%3E"/>
+<link href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20128%20128%22%3E%3Crect%20width%3D%22128%22%20height%3D%22128%22%20rx%3D%2229%22%20fill%3D%22%23f5f4ef%22%2F%3E%3Cpath%20d%3D%22M38%2034H91L51%2064L91%2094H38%22%20fill%3D%22none%22%20stroke%3D%22%23596e61%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M38%20105H90%22%20stroke%3D%22%238b9185%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2299%22%20cy%3D%2227%22%20r%3D%223.5%22%20fill%3D%22%23b78b78%22%2F%3E%3Ctext%20x%3D%2294%22%20y%3D%22112%22%20fill%3D%22%23596e61%22%20font-family%3D%22Georgia%2Cserif%22%20font-size%3D%2210%22%20font-style%3D%22italic%22%3Ex%E1%B5%A2%3C%2Ftext%3E%3C%2Fsvg%3E" id="jing-icon-favicon-v2" rel="icon" type="image/svg+xml">
 <script id="jing-theme-following-favicon-v1">
 (function(){
   const link=document.getElementById('jing-icon-favicon-v2');
@@ -9403,120 +9400,122 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('DOMContentLoaded',syncIcon,{once:true});
 })();
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</head>
+<style id="jing-offline-radius-and-app-name-fix">
+/* 线下页面 CSS 精简修正：角色卡片与头像取消圆角，避免旧样式叠加产生弧形边缘。 */
+#jingOfflineScreens .os-role,
+#jingOfflineScreens .os-role .portrait,
+#jingOfflineScreens .os-role img,
+  border-radius: 0 !important;
+}
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+  outline: 2px solid var(--os-accent) !important;
+  outline-offset: 3px !important;
+}
+/* 桌面应用改名控件：窄屏保持输入框和按钮可用，不挤压原有图标网格。 */
+#desktopSettingsPanel .ds-app-name-editor { margin: 14px 0 18px; }
+#desktopSettingsPanel .ds-app-name-row { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; }
+#desktopSettingsPanel #appNameInput { min-width:0; margin:0; }
+#desktopSettingsPanel #restoreAppName { white-space:nowrap; min-height:42px; }
+@media (max-width:380px) { #desktopSettingsPanel .ds-app-name-row { grid-template-columns:minmax(0,1fr); } #desktopSettingsPanel #restoreAppName { width:100%; } }
+/* 线下「选择角色」区域：仅移除角色证件卡及头像的圆角，其他线下界面不受影响。 */
+#memory-screen #memory-role-grid .jing-memory-role-card,
+#memory-screen #memory-role-grid .jing-memory-role-card.jing-memory-id-card,
+#memory-screen #memory-role-grid .jing-memory-role-card.jing-memory-id-card::before,
+#memory-screen #memory-role-grid .jing-memory-role-card .jing-id-photo,
+#memory-screen #memory-role-grid .jing-memory-role-card .jing-id-photo img,
+#memory-screen #memory-role-grid .jing-memory-role-card .jing-id-photo .fallback {
+  border-radius: 0 !important;
+}
+#memory-screen #memory-role-grid .jing-memory-role-card.jing-memory-id-card {
+  overflow: hidden !important;
+}</style>
+</link></head>
 <body>
-<div id="jing-startup-splash" role="status" aria-live="polite" aria-label="京莹正在加载">
-  <div class="jss-inner">
-    <svg class="jss-mark" viewBox="0 0 128 128" fill="none" aria-hidden="true">
-      <!-- 京莹机：以求和符号为灵感的几何线性标记 -->
-      <path class="jss-base" d="M38 105H90" stroke-width="1.5" stroke-linecap="round"/>
-      <path class="jss-glyph" d="M38 34H91L51 64L91 94H38" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle class="jss-node" cx="99" cy="27" r="3.5"/>
-      <text class="jss-formula-text" x="94" y="112">xᵢ</text>
-    </svg>
-    <div class="jss-name">京莹机</div>
-    <div class="jss-status" id="jing-startup-status">正在整理空间</div>
-    <div class="jss-track" aria-hidden="true"><div class="jss-progress"></div></div>
-  </div>
+<div aria-label="京莹正在加载" aria-live="polite" id="jing-startup-splash" role="status">
+<div class="jss-inner">
+<svg aria-hidden="true" class="jss-mark" fill="none" viewbox="0 0 128 128">
+<!-- 京莹机：以求和符号为灵感的几何线性标记 -->
+<path class="jss-base" d="M38 105H90" stroke-linecap="round" stroke-width="1.5"></path>
+<path class="jss-glyph" d="M38 34H91L51 64L91 94H38" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"></path>
+<circle class="jss-node" cx="99" cy="27" r="3.5"></circle>
+<text class="jss-formula-text" x="94" y="112">xᵢ</text>
+</svg>
+<div class="jss-name">京莹机</div>
+<div class="jss-status" id="jing-startup-status">正在整理空间</div>
+<div aria-hidden="true" class="jss-track"><div class="jss-progress"></div></div>
 </div>
-
+</div>
 <main aria-label="京莹机桌面" id="desktop">
-<div aria-hidden="true" class="wallpaper"><img alt="" class="wallpaper-image" decoding="async" fetchpriority="high" loading="eager" draggable="false" id="wallpaperImage"/><video autoplay="" class="wallpaper-video" id="wallpaperVideo" loop="" muted="" playsinline=""></video></div>
+<div aria-hidden="true" class="wallpaper"><img alt="" class="wallpaper-image" decoding="async" draggable="false" fetchpriority="high" id="wallpaperImage" loading="eager"/><video autoplay="" class="wallpaper-video" id="wallpaperVideo" loop="" muted="" playsinline=""></video></div>
 <section aria-label="桌面时间与日期" class="home-clock-widget clock-style-1" id="homeClockWidget">
-<div class="home-clock-time" id="homeClockTime"><span id="homeClockHour">09</span><span class="home-clock-colon">:</span><span class="home-clock-minute" id="homeClockMinute">41</span><small class="jdw-clock-period" id="jing-desktop-widgets-clock-period" aria-label="上午">AM</small></div>
+<div class="home-clock-time" id="homeClockTime"><span id="homeClockHour">09</span><span class="home-clock-colon">:</span><span class="home-clock-minute" id="homeClockMinute">41</span><small aria-label="上午" class="jdw-clock-period" id="jing-desktop-widgets-clock-period">AM</small></div>
 <div class="home-clock-date" id="homeClockDate">11月05日 星期四</div>
-<div class="home-clock-secondary" id="homeClockSecondary" aria-live="off"><span class="home-clock-secondary-label" id="homeClockSecondaryLabel">TOKYO</span><strong id="homeClockSecondaryTime">22:41</strong></div>
+<div aria-live="off" class="home-clock-secondary" id="homeClockSecondary"><span class="home-clock-secondary-label" id="homeClockSecondaryLabel">TOKYO</span><strong id="homeClockSecondaryTime">22:41</strong></div>
 <div class="home-clock-signature" id="homeClockSignature">make it count</div>
 </section>
 <div class="polaroid-caption">little moments</div><div class="polaroid-photo second"><img alt="拍立得第二张照片" id="polaroidImage2"/></div>
-<div aria-label="电子吧唧桌面组件" class="shape-circle" id="eBadgeWidget"><div class="shape-circle film-gloss" id="eBadgeFace"><img alt="电子吧唧图案" id="eBadgeImage"/><video id="eBadgeVideo" muted loop playsinline autoplay style="display:none;width:100%;height:100%;object-fit:cover;pointer-events:none"></video></div><div aria-hidden="true" class="shape-circle" id="eBadgeBack"></div></div>
+<div aria-label="电子吧唧桌面组件" class="shape-circle" id="eBadgeWidget"><div class="shape-circle film-gloss" id="eBadgeFace"><img alt="电子吧唧图案" id="eBadgeImage"/><video autoplay="" id="eBadgeVideo" loop="" muted="" playsinline="" style="display:none;width:100%;height:100%;object-fit:cover;pointer-events:none"></video></div><div aria-hidden="true" class="shape-circle" id="eBadgeBack"></div></div>
 <section aria-label="桌面页面" class="pages" id="pages"></section>
 <nav aria-label="桌面分页" class="page-nav" id="pageNav"></nav>
 <footer aria-label="底部四格" class="jb-dock" id="jing-beautify-dock"></footer>
 <section aria-hidden="true" aria-label="桌面组件编辑" aria-modal="true" class="widget-edit-overlay" id="widgetEditOverlay" role="dialog">
-  <header class="jdw-edit-header">
-    <button aria-label="返回桌面" class="jdw-icon-button" id="widgetEditBack" type="button">
-      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"/></svg>
-    </button>
-    <div class="jdw-edit-heading">
-      <span class="jdw-eyebrow">HOME SCREEN</span>
-      <h2 class="jdw-edit-title">桌面组件</h2>
-      <p class="jdw-edit-subtitle">在桌面空白处双指向内捏合，添加或管理小组件。</p>
-    </div>
-    <button class="jdw-done-button" id="widgetEditDone" type="button">完成</button>
-  </header>
+<header class="jdw-edit-header">
+<button aria-label="返回桌面" class="jdw-icon-button" id="widgetEditBack" type="button">
+<svg aria-hidden="true" viewbox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"></path></svg>
+</button>
+<div class="jdw-edit-heading">
+<span class="jdw-eyebrow">HOME SCREEN</span>
+<h2 class="jdw-edit-title">桌面组件</h2>
+<p class="jdw-edit-subtitle">在桌面空白处双指向内捏合，添加或管理小组件。</p>
+</div>
+<button class="jdw-done-button" id="widgetEditDone" type="button">完成</button>
+</header>
 <button class="jdw-add-entry" id="widgetAddOpen" type="button">
-    <span class="jdw-add-icon" aria-hidden="true">＋</span>
-    <span class="jdw-add-copy"><strong>添加小组件</strong><small>浏览组件样式并添加到桌面</small></span>
-    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
-  </button>
-
-  <div class="jdw-section-heading">
-    <div><h3>当前桌面组件</h3><p>点按调整设置；可在桌面拖动组件调整位置</p></div>
-    <span class="jdw-count" id="widgetEditCount">0 个</span>
-  </div>
-  <div aria-live="polite" class="jdw-current-list" id="widgetEditCurrentList"></div>
+<span aria-hidden="true" class="jdw-add-icon">＋</span>
+<span class="jdw-add-copy"><strong>添加小组件</strong><small>浏览组件样式并添加到桌面</small></span>
+<svg aria-hidden="true" viewbox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg>
+</button>
+<div class="jdw-section-heading">
+<div><h3>当前桌面组件</h3><p>点按调整设置；可在桌面拖动组件调整位置</p></div>
+<span class="jdw-count" id="widgetEditCount">0 个</span>
+</div>
+<div aria-live="polite" class="jdw-current-list" id="widgetEditCurrentList"></div>
 </section>
 <section aria-hidden="true" aria-label="添加小组件" aria-modal="true" class="widget-catalog-overlay" id="widgetCatalogOverlay" role="dialog">
-  <header class="jdw-catalog-header">
-    <button aria-label="返回上一级" class="jdw-icon-button jdw-catalog-back-button" id="widgetCatalogBack" type="button">
-      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"/></svg>
-      
-    </button>
-    <div><span class="jdw-eyebrow">WIDGET GALLERY</span><h2>添加小组件</h2><p>选择一个组件添加到桌面</p></div>
-  </header>
-  <div class="jdw-catalog-intro">
-    <div><strong>挑选桌面组件</strong><span>选择喜欢的样式，添加后可继续自定义内容与外观。</span></div>
-    <span class="jdw-catalog-total" id="widgetCatalogTotal">已添加 0 / 3</span>
-  </div>
-  <div aria-live="polite" class="jdw-catalog-grid" id="widgetCatalogGrid"></div>
+<header class="jdw-catalog-header">
+<button aria-label="返回上一级" class="jdw-icon-button jdw-catalog-back-button" id="widgetCatalogBack" type="button">
+<svg aria-hidden="true" viewbox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"></path></svg>
+</button>
+<div><span class="jdw-eyebrow">WIDGET GALLERY</span><h2>添加小组件</h2><p>选择一个组件添加到桌面</p></div>
+</header>
+<div class="jdw-catalog-intro">
+<div><strong>挑选桌面组件</strong><span>选择喜欢的样式，添加后可继续自定义内容与外观。</span></div>
+<span class="jdw-catalog-total" id="widgetCatalogTotal">已添加 0 / 3</span>
+</div>
+<div aria-live="polite" class="jdw-catalog-grid" id="widgetCatalogGrid"></div>
 </section>
-
-
 <section aria-label="桌面组件" class="app-screen" id="widgetSettingsScreen">
 <div aria-label="组件设置" id="widgetSettingsPanel" style="display:none;padding:0 14px 24px;">
-<header class="jdw-settings-header"><button aria-label="返回上一级" class="jdw-settings-back" id="widgetPanelBack" type="button"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"></path></svg></button><div class="jdw-settings-title-wrap"><div class="jdw-settings-kicker">HOME WIDGETS</div><div class="jdw-settings-title">组件设置</div><div class="jdw-settings-subtitle">每个组件独立开关，互不影响。</div></div><button aria-label="关闭组件设置" class="jdw-panel-close" id="widgetPanelClose" type="button">×</button></header>
-
+<header class="jdw-settings-header"><button aria-label="返回上一级" class="jdw-settings-back" id="widgetPanelBack" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"></path></svg></button><div class="jdw-settings-title-wrap"><div class="jdw-settings-kicker">HOME WIDGETS</div><div class="jdw-settings-title">组件设置</div><div class="jdw-settings-subtitle">每个组件独立开关，互不影响。</div></div><button aria-label="关闭组件设置" class="jdw-panel-close" id="widgetPanelClose" type="button">×</button></header>
 <section id="clockWidgetDetail" style="display:none"><div class="jdw-settings-title" style="margin:12px 0 16px">时间栏</div><div class="widget-detail-card"><div class="setting-title">桌面时间与日期</div><div class="setting-hint" style="margin-top:6px">开启后显示在桌面，可拖动调整位置。</div><div class="widget-detail-switch-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px"><span class="setting-title">启用时间栏</span><span aria-checked="true" aria-label="时间栏开关" class="toggle" id="clockWidgetToggle" role="switch"></span></div><button aria-label="时制切换" class="jdw-time-format-setting" id="jing-desktop-widgets-time-format-setting-row" type="button"><span class="jdw-time-format-copy"><strong>时制切换</strong><small>12小时制 / 24小时制</small></span><span aria-checked="true" aria-label="时制切换开关" class="toggle" id="jing-desktop-widgets-time-format-toggle" role="switch"></span></button><div class="clock-style-picker"><div class="clock-style-heading"><strong>时间栏样式</strong><span>六种不同排版 · 每款可独立切换黑白</span></div><div class="clock-style-grid" id="clockStyleGrid">
-<button type="button" class="clock-style-option" data-clock-style="2" aria-pressed="false"><span class="clock-style-sample clock-style-sample-2"><small>THE BIG VERTICAL</small><b>09</b><b>41</b><sup class="jdw-clock-sample-period">AM</sup><i>THU · NOV 05</i></span><strong>竖向特大号</strong><em>2列 × 3行，数字上下铺满整个组件</em></button>
-<button type="button" class="clock-style-option" data-clock-style="3" aria-pressed="false"><span class="clock-style-sample clock-style-sample-3"><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><small>LOCAL　↔　TOKYO</small><i>22:41</i></span><strong>双地区时间</strong><em>同时显示两个地区的时间，可自选城市或输入时区</em></button>
-<button type="button" class="clock-style-option" data-clock-style="4" aria-pressed="false"><span class="clock-style-sample clock-style-sample-4"><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><small>make it count</small><i>YOUR SIGNATURE</i></span><strong>签名时钟</strong><em>在时间旁显示自己填写的短签名</em></button>
-<button type="button" class="clock-style-option" data-clock-style="5" aria-pressed="false"><span class="clock-style-sample clock-style-sample-5"><small>DIGITAL / TIME</small><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><i>THU · 05 NOV</i></span><strong>机械数字</strong><em>等宽数字、紧凑字距，强调清晰的数字节奏</em></button>
-<button type="button" class="clock-style-option" data-clock-style="6" aria-pressed="false"><span class="clock-style-sample clock-style-sample-6"><small>LOCAL TIME</small><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><i>THU · NOV 05</i></span><strong>极简横排</strong><em>无衬线大时间配轻量日期，左对齐留白排版</em></button>
-<button type="button" class="clock-style-option" data-clock-style="7" aria-pressed="false"><span class="clock-style-sample clock-style-sample-7"><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><i>11月05日 星期四</i><small>ORIGINAL STYLE</small></span><strong>原版时间栏</strong><em>恢复最初的横向大时间 + 日期排版</em></button>
-</div><div class="clock-style-extra"><div class="clock-tone-setting"><span>当前样式文字颜色</span><div role="group" aria-label="时间栏文字颜色"><button type="button" data-clock-tone="dark" aria-pressed="true"><i></i>黑色</button><button type="button" data-clock-tone="light" aria-pressed="false"><i></i>白色</button></div></div><label id="clockTimezoneSetting" hidden>第二时区地区<select id="clockTimezoneSelect" class="clock-timezone-native" aria-hidden="true" tabindex="-1"><option value="America/Los_Angeles">洛杉矶 · Los Angeles</option><option value="America/Vancouver">温哥华 · Vancouver</option><option value="America/Denver">丹佛 · Denver</option><option value="America/Chicago">芝加哥 · Chicago</option><option value="America/New_York">纽约 · New York</option><option value="Pacific/Honolulu">檀香山 · Honolulu</option><option value="Europe/London">伦敦 · London</option><option value="Europe/Paris">巴黎 · Paris</option><option value="Europe/Berlin">柏林 · Berlin</option><option value="Asia/Dubai">迪拜 · Dubai</option><option value="Asia/Kolkata">新德里 · New Delhi</option><option value="Asia/Singapore">新加坡 · Singapore</option><option value="Asia/Shanghai">上海 · Shanghai</option><option value="Asia/Tokyo">东京 · Tokyo</option><option value="Asia/Seoul">首尔 · Seoul</option><option value="Australia/Sydney">悉尼 · Sydney</option><option value="Pacific/Auckland">奥克兰 · Auckland</option><option value="America/Sao_Paulo">圣保罗 · São Paulo</option><option value="UTC">UTC</option></select><div class="clock-zone-picker" id="clockZonePicker"><button type="button" class="clock-zone-trigger" id="clockZoneTrigger" aria-haspopup="listbox" aria-expanded="false"><span class="clock-zone-trigger-copy"><small>SECOND TIME ZONE</small><strong id="clockZoneCurrent">东京 · Tokyo</strong></span><span class="clock-zone-chevron" aria-hidden="true">⌄</span></button><div class="clock-zone-menu" id="clockZoneMenu" role="listbox" aria-label="选择第二时区" hidden></div></div><input id="clockTimezoneCustom" type="text" placeholder="或输入 IANA 时区，如 Asia/Taipei" autocomplete="off"></label><label id="clockSignatureSetting" hidden>时间签名<input id="clockSignatureInput" type="text" maxlength="28" placeholder="输入你自己的签名"></label></div></div></div></section>
-
-<section id="eBadgeDetail" style="display:none"><div class="jdw-settings-title" style="margin:12px 0 4px">电子吧唧</div><div class="font-section-caption">像一枚小小的金属收藏徽章，点击桌面可翻转；透明留白保留 2×2 网格站位。</div><div class="widget-detail-card"><div class="widget-detail-switch-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px"><span class="setting-title">启用电子吧唧</span><span aria-checked="false" aria-label="电子吧唧开关" class="toggle" id="eBadgeToggle" role="switch"></span></div><div class="e-badge-detail-preview"><div class="shape-circle film-gloss" id="eBadgePreviewFace" style="position:relative;width:100%;height:100%;overflow:hidden;border-radius:50%;border:3px solid #c8cdd0;background:linear-gradient(135deg,#5b6064 0%,#f5f7f8 14%,#9da3a7 27%,#fff 39%,#8b9195 53%,#e8ebed 68%,#686e72 82%,#f8f9fa 100%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.75),0 6px 16px rgba(46,55,37,.2)"><img alt="吧唧预览" id="eBadgePreviewImage" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1)"/><video id="eBadgePreviewVideo" muted loop playsinline autoplay style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none"></video><span class="badge-film-overlay film-gloss" id="eBadgePreviewFilm" style="position:absolute;inset:-2%;pointer-events:none;mix-blend-mode:screen;opacity:.72;border-radius:inherit"></span></div></div>
+<button aria-pressed="false" class="clock-style-option" data-clock-style="2" type="button"><span class="clock-style-sample clock-style-sample-2"><small>THE BIG VERTICAL</small><b>09</b><b>41</b><sup class="jdw-clock-sample-period">AM</sup><i>THU · NOV 05</i></span><strong>竖向特大号</strong><em>2列 × 3行，数字上下铺满整个组件</em></button>
+<button aria-pressed="false" class="clock-style-option" data-clock-style="3" type="button"><span class="clock-style-sample clock-style-sample-3"><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><small>LOCAL　↔　TOKYO</small><i>22:41</i></span><strong>双地区时间</strong><em>同时显示两个地区的时间，可自选城市或输入时区</em></button>
+<button aria-pressed="false" class="clock-style-option" data-clock-style="4" type="button"><span class="clock-style-sample clock-style-sample-4"><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><small>make it count</small><i>YOUR SIGNATURE</i></span><strong>签名时钟</strong><em>在时间旁显示自己填写的短签名</em></button>
+<button aria-pressed="false" class="clock-style-option" data-clock-style="5" type="button"><span class="clock-style-sample clock-style-sample-5"><small>DIGITAL / TIME</small><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><i>THU · 05 NOV</i></span><strong>机械数字</strong><em>等宽数字、紧凑字距，强调清晰的数字节奏</em></button>
+<button aria-pressed="false" class="clock-style-option" data-clock-style="6" type="button"><span class="clock-style-sample clock-style-sample-6"><small>LOCAL TIME</small><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><i>THU · NOV 05</i></span><strong>极简横排</strong><em>无衬线大时间配轻量日期，左对齐留白排版</em></button>
+<button aria-pressed="false" class="clock-style-option" data-clock-style="7" type="button"><span class="clock-style-sample clock-style-sample-7"><b>09:41<sup class="jdw-clock-sample-period">AM</sup></b><i>11月05日 星期四</i><small>ORIGINAL STYLE</small></span><strong>原版时间栏</strong><em>恢复最初的横向大时间 + 日期排版</em></button>
+</div><div class="clock-style-extra"><div class="clock-tone-setting"><span>当前样式文字颜色</span><div aria-label="时间栏文字颜色" role="group"><button aria-pressed="true" data-clock-tone="dark" type="button"><i></i>黑色</button><button aria-pressed="false" data-clock-tone="light" type="button"><i></i>白色</button></div></div><label hidden="" id="clockTimezoneSetting">第二时区地区<select aria-hidden="true" class="clock-timezone-native" id="clockTimezoneSelect" tabindex="-1"><option value="America/Los_Angeles">洛杉矶 · Los Angeles</option><option value="America/Vancouver">温哥华 · Vancouver</option><option value="America/Denver">丹佛 · Denver</option><option value="America/Chicago">芝加哥 · Chicago</option><option value="America/New_York">纽约 · New York</option><option value="Pacific/Honolulu">檀香山 · Honolulu</option><option value="Europe/London">伦敦 · London</option><option value="Europe/Paris">巴黎 · Paris</option><option value="Europe/Berlin">柏林 · Berlin</option><option value="Asia/Dubai">迪拜 · Dubai</option><option value="Asia/Kolkata">新德里 · New Delhi</option><option value="Asia/Singapore">新加坡 · Singapore</option><option value="Asia/Shanghai">上海 · Shanghai</option><option value="Asia/Tokyo">东京 · Tokyo</option><option value="Asia/Seoul">首尔 · Seoul</option><option value="Australia/Sydney">悉尼 · Sydney</option><option value="Pacific/Auckland">奥克兰 · Auckland</option><option value="America/Sao_Paulo">圣保罗 · São Paulo</option><option value="UTC">UTC</option></select><div class="clock-zone-picker" id="clockZonePicker"><button aria-expanded="false" aria-haspopup="listbox" class="clock-zone-trigger" id="clockZoneTrigger" type="button"><span class="clock-zone-trigger-copy"><small>SECOND TIME ZONE</small><strong id="clockZoneCurrent">东京 · Tokyo</strong></span><span aria-hidden="true" class="clock-zone-chevron">⌄</span></button><div aria-label="选择第二时区" class="clock-zone-menu" hidden="" id="clockZoneMenu" role="listbox"></div></div><input autocomplete="off" id="clockTimezoneCustom" placeholder="或输入 IANA 时区，如 Asia/Taipei" type="text"/></label><label hidden="" id="clockSignatureSetting">时间签名<input id="clockSignatureInput" maxlength="28" placeholder="输入你自己的签名" type="text"/></label></div></div></div></section>
+<section id="eBadgeDetail" style="display:none"><div class="jdw-settings-title" style="margin:12px 0 4px">电子吧唧</div><div class="font-section-caption">像一枚小小的金属收藏徽章，点击桌面可翻转；透明留白保留 2×2 网格站位。</div><div class="widget-detail-card"><div class="widget-detail-switch-row" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px"><span class="setting-title">启用电子吧唧</span><span aria-checked="false" aria-label="电子吧唧开关" class="toggle" id="eBadgeToggle" role="switch"></span></div><div class="e-badge-detail-preview"><div class="shape-circle film-gloss" id="eBadgePreviewFace" style="position:relative;width:100%;height:100%;overflow:hidden;border-radius:50%;border:3px solid #c8cdd0;background:linear-gradient(135deg,#5b6064 0%,#f5f7f8 14%,#9da3a7 27%,#fff 39%,#8b9195 53%,#e8ebed 68%,#686e72 82%,#f8f9fa 100%);box-shadow:inset 0 0 0 2px rgba(255,255,255,.75),0 6px 16px rgba(46,55,37,.2)"><img alt="吧唧预览" id="eBadgePreviewImage" style="width:100%;height:100%;object-fit:cover;display:block;transform:scale(1)"/><video autoplay="" id="eBadgePreviewVideo" loop="" muted="" playsinline="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none"></video><span class="badge-film-overlay film-gloss" id="eBadgePreviewFilm" style="position:absolute;inset:-2%;pointer-events:none;mix-blend-mode:screen;opacity:.72;border-radius:inherit"></span></div></div>
 <div class="setting-title">外形</div><div class="e-badge-shape-row"><button class="e-badge-choice active" data-badge-shape="circle" type="button">◯ 圆形金属壳</button><button class="e-badge-choice" data-badge-shape="square" type="button">□ 方形金属壳</button></div>
 <div class="setting-title" style="margin-top:17px">覆膜工艺</div><div class="e-badge-film-row"><button class="e-badge-choice active" data-badge-film="none" type="button">不覆膜</button><button class="e-badge-choice" data-badge-film="gloss" type="button">亮膜</button><button class="e-badge-choice" data-badge-film="matte" type="button">磨砂</button><button class="e-badge-choice" data-badge-film="laser" type="button">镭射</button><button class="e-badge-choice" data-badge-film="pearl" type="button">珠光</button><button class="e-badge-choice" data-badge-film="ice" type="button">冰晶膜</button></div>
 <div class="setting-title" style="margin-top:17px">翻转方向</div><div class="e-badge-shape-row"><button class="e-badge-choice active" data-badge-axis="x" type="button">左右翻转</button><button class="e-badge-choice" data-badge-axis="y" type="button">上下翻转</button></div>
-<div class="setting-title" style="margin-top:17px">覆膜覆盖范围 <span id="eBadgeFilmSizeValue">108%</span></div><input aria-label="覆膜覆盖范围" class="widget-slider" id="eBadgeFilmSize" max="120" min="75" type="range" value="108"/><div class="setting-title" style="margin-top:17px">覆膜透明度 <span id="eBadgeOpacityValue">72%</span></div><input aria-label="覆膜透明度" class="widget-slider" id="eBadgeOpacity" max="100" min="0" type="range" value="72"/>
-<div class="setting-title" style="margin-top:17px">图案来源</div><input class="widget-url" id="eBadgeUrl" placeholder="粘贴图片 URL" type="url"/><div class="widget-action-row" style="display:flex;gap:8px;margin-top:9px"><button class="widget-action" id="eBadgeApplyUrl" style="flex:1" type="button">应用链接</button><button class="widget-action" id="eBadgeAlbumButton" style="flex:1" type="button">从相册导入</button><input class="widget-hidden-file" id="eBadgeFile" type="file" accept="image/*,video/*,.gif,.webp,.apng,.jpg,.jpeg,.png,.avif,.bmp,.heic,.heif,.mp4,.mov,.webm,.m4v,.ogv"/></div>
-<div class="setting-title" style="margin-top:17px">图案位置</div><div class="setting-hint" style="margin:8px 0 4px">缩放 <span id="eBadgeZoomValue">137%</span></div><input aria-label="图案缩放" class="widget-slider" id="eBadgeZoom" max="200" min="80" type="range" value="137"/><div class="setting-hint" style="margin:8px 0 4px">左右位置 <span id="eBadgeXValue">0</span></div><input aria-label="图案左右位置" class="widget-slider" id="eBadgeX" max="30" min="-30" type="range" value="0"/><div class="setting-hint" style="margin:8px 0 4px">上下位置 <span id="eBadgeYValue">0</span></div><input aria-label="图案上下位置" class="widget-slider" id="eBadgeY" max="30" min="-30" type="range" value="0"/><div class="widget-action-row" style="display:flex;gap:8px;margin-top:12px"><button class="widget-action" id="eBadgeRestoreDefault" style="flex:1" type="button">恢复默认</button><button class="widget-action" id="eBadgeRestoreWallpaper" style="flex:1" type="button">恢复默认壁纸</button></div><div class="font-section-caption" id="eBadgeStatus" style="margin-top:10px"></div></div></section>
-
+<div class="setting-title" style="margin-top:17px">覆膜覆盖范围 <span id="eBadgeFilmSizeValue">108%</span></div><input aria-label="覆膜覆盖范围" class="widget-slider" id="eBadgeFilmSize" max="120" min="75" type="range" value="108"><div class="setting-title" style="margin-top:17px">覆膜透明度 <span id="eBadgeOpacityValue">72%</span></div><input aria-label="覆膜透明度" class="widget-slider" id="eBadgeOpacity" max="100" min="0" type="range" value="72">
+<div class="setting-title" style="margin-top:17px">图案来源</div><input class="widget-url" id="eBadgeUrl" placeholder="粘贴图片 URL" type="url"/><div class="widget-action-row" style="display:flex;gap:8px;margin-top:9px"><button class="widget-action" id="eBadgeApplyUrl" style="flex:1" type="button">应用链接</button><button class="widget-action" id="eBadgeAlbumButton" style="flex:1" type="button">从相册导入</button><input accept="image/*,video/*,.gif,.webp,.apng,.jpg,.jpeg,.png,.avif,.bmp,.heic,.heif,.mp4,.mov,.webm,.m4v,.ogv" class="widget-hidden-file" id="eBadgeFile" type="file"/></div>
+<div class="setting-title" style="margin-top:17px">图案位置</div><div class="setting-hint" style="margin:8px 0 4px">缩放 <span id="eBadgeZoomValue">137%</span></div><input aria-label="图案缩放" class="widget-slider" id="eBadgeZoom" max="200" min="80" type="range" value="137"/><div class="setting-hint" style="margin:8px 0 4px">左右位置 <span id="eBadgeXValue">0</span></div><input aria-label="图案左右位置" class="widget-slider" id="eBadgeX" max="30" min="-30" type="range" value="0"/><div class="setting-hint" style="margin:8px 0 4px">上下位置 <span id="eBadgeYValue">0</span></div><input aria-label="图案上下位置" class="widget-slider" id="eBadgeY" max="30" min="-30" type="range" value="0"/><div class="widget-action-row" style="display:flex;gap:8px;margin-top:12px"><button class="widget-action" id="eBadgeRestoreDefault" style="flex:1" type="button">恢复默认</button><button class="widget-action" id="eBadgeRestoreWallpaper" style="flex:1" type="button">恢复默认壁纸</button></div><div class="font-section-caption" id="eBadgeStatus" style="margin-top:10px"></div></input></input></div></section>
 </div>
 </section>
-
 <section aria-label="美化" class="app-screen" id="beautyScreen">
 <header class="jb-beauty-head">
 <button aria-label="返回" class="jb-beauty-back" id="beautyBack" type="button">
@@ -9527,7 +9526,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div class="jb-beauty-english">BEAUTY</div>
 </div>
 </header>
-<div class="jb-font-settings-main" id="fontSettingsMain" data-jing-module-owner="beautify">
+<div class="jb-font-settings-main" data-jing-module-owner="beautify" id="fontSettingsMain">
 <div class="global-heading"><div class="global-title">美化设置</div></div>
 <button aria-label="桌面设置" class="jb-beauty-setting-card mb-18" id="desktopSettingRow" type="button">
 <span aria-hidden="true" class="setting-icon"><svg viewbox="0 0 24 24"><rect height="16" rx="3" width="18" x="3" y="4"></rect><path d="m4 16 5-5 4 4 3-3 4 4"></path><circle cx="8" cy="8.5" r="1.2"></circle></svg></span>
@@ -9552,9 +9551,8 @@ document.addEventListener('DOMContentLoaded',()=>{
 <span class="setting-copy"><span class="setting-title">字体设置</span><span class="setting-hint">更换或导入字体</span></span>
 <span aria-hidden="true" class="setting-icon setting-arrow"><svg viewbox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg></span>
 </button>
-
 </div>
-<section aria-label="主题设置" id="themeSettingsPanel" style="display:none;padding:0 14px 28px;" data-jing-module-owner="beautify">
+<section aria-label="主题设置" data-jing-module-owner="beautify" id="themeSettingsPanel" style="display:none;padding:0 14px 28px;">
 <header class="jb-settings-header"><button aria-label="返回美化设置" class="jb-settings-back" id="themePanelBack" type="button"><svg viewbox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"></path></svg></button><div class="jb-settings-title-wrap"><div class="jb-settings-kicker">GLOBAL COLOR SYSTEM</div><div class="jb-settings-title">主题设置</div><div class="jb-settings-subtitle">选择一套色系，立即应用到整个界面。</div></div></header>
 <div class="jb-theme-section-heading"><div class="jb-theme-section-title">选择全局色系</div><div class="jb-theme-section-caption">点击色块即可实时换肤，并自动保存选择。</div></div>
 <div aria-label="选择全局色系" class="jb-theme-palette" id="themePalette" role="group">
@@ -9568,14 +9566,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 <button aria-label="暗夜黑 Dark" aria-pressed="false" class="jb-theme-choice" data-theme-choice="dark" type="button"><span class="jb-theme-color-dot" style="--swatch:#333333"></span></button>
 </div>
 <div class="jb-theme-section-heading jing-interface-texture-heading" style="margin-top:18px"><div class="jing-interface-texture-copy"><div class="jb-theme-section-title">界面质感</div><div class="jb-theme-section-caption">统一控制全局界面的立体层次与细节。</div></div><span aria-checked="false" aria-label="界面质感开关" class="toggle" id="embossEffectToggle" role="switch" tabindex="0"></span></div>
-
-
 <div class="jb-theme-preview-card"><div class="jb-theme-preview-heading"><div><div class="jb-theme-section-title">实时预览</div><div class="jb-theme-section-caption">预览会跟随当前全局主题变化</div></div><span class="jb-theme-preview-live">LIVE</span></div>
 <div class="jb-theme-phone-stage"><div class="jb-theme-phone-frame"><div class="jb-theme-phone-notch"></div><div class="jb-theme-phone-screen"><div class="jb-theme-phone-status"><span>9:41</span><span>•••</span></div><div class="jb-theme-preview-greeting">Good day<span>给生活一点柔和的颜色</span></div><div class="jb-theme-preview-bubble jb-theme-preview-bubble-left">今天也要保持好心情</div><div class="jb-theme-preview-bubble jb-theme-preview-bubble-right">收到，出发吧</div><div class="jb-theme-preview-bottom"><span class="jb-theme-preview-app-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M9 18V5l11-2v13M9 8l11-2"></path><circle cx="6" cy="18" r="3"></circle><circle cx="17" cy="16" r="3"></circle></svg></span><span class="jb-theme-preview-track"><strong>Soft Morning</strong><small>Jing Music · Preview</small></span><span class="jb-theme-preview-play">▶</span></div></div></div></div></div>
 <div aria-live="polite" class="jb-theme-current-status" id="themeCurrentStatus">当前主题：樱花粉</div>
 </section>
-
-<div aria-label="字体设置" id="fontSettingsPanel" data-jing-module-owner="beautify">
+<div aria-label="字体设置" data-jing-module-owner="beautify" id="fontSettingsPanel">
 <header class="jb-settings-header">
 <button aria-label="返回美化设置" class="jb-settings-back" id="fontPanelBack" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"></path></svg></button>
 <div class="jb-settings-title-wrap">
@@ -9607,9 +9602,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div class="jb-font-preview-text" id="fontPreviewText">让每一处细节，都恰到好处。<br/>The quick brown fox jumps over the lazy dog. 0123456789</div>
 </div>
 <div class="jb-font-size-control">
-  <div class="jb-font-size-heading"><label class="form-label" for="globalFontSizeRange">界面字体字号</label><strong id="globalFontSizeValue">16 px</strong></div>
-  <input id="globalFontSizeRange" class="jb-font-size-range" type="range" min="10" max="30" step="1" value="16" />
-  <div class="jb-font-size-limits"><span>较小 10 px</span><span>较大 30 px</span></div>
+<div class="jb-font-size-heading"><label class="form-label" for="globalFontSizeRange">界面字体字号</label><strong id="globalFontSizeValue">16 px</strong></div>
+<input class="jb-font-size-range" id="globalFontSizeRange" max="30" min="10" step="1" type="range" value="16"/>
+<div class="jb-font-size-limits"><span>较小 10 px</span><span>较大 30 px</span></div>
 </div>
 <div class="btn-row">
 <button class="font-action" id="restoreDefaultFont" type="button">恢复默认字体</button>
@@ -9634,7 +9629,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div aria-live="polite" class="jb-font-status" id="fontStatus" role="status"></div>
 </div>
 </div>
-<div aria-label="桌面设置" id="desktopSettingsPanel" data-jing-module-owner="beautify">
+<div aria-label="桌面设置" data-jing-module-owner="beautify" id="desktopSettingsPanel">
 <header class="jb-settings-header">
 <button aria-label="返回美化设置" class="jb-settings-back" id="desktopPanelBack" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"></path></svg></button>
 <div class="jb-settings-title-wrap">
@@ -9659,7 +9654,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 <button class="font-action primary" id="applyWallpaperUrl" type="button">应用壁纸</button>
 <button class="font-action" id="chooseWallpaperFile" type="button">从相册选择</button>
 <button class="font-action full-width" id="restoreWallpaper" type="button">恢复默认壁纸</button>
-
 </div>
 <input accept="image/*,video/*,.gif,.webp,.apng,.jpg,.jpeg,.mp4,.mov,.webm" hidden="" id="wallpaperFileInput" multiple="" type="file"/>
 </section>
@@ -9670,6 +9664,14 @@ document.addEventListener('DOMContentLoaded',()=>{
 <p class="ds-icon-intro" style="display:none"></p>
 <div aria-label="桌面和底栏图标列表" class="icon-preview-grid" id="iconPreviewGrid"></div>
 <div class="selected-icon-title">正在编辑：<strong id="selectedIconName">美化</strong></div>
+<div aria-label="应用名称编辑" class="ds-app-name-editor">
+<label class="form-label" for="appNameInput">应用名称</label>
+<div class="ds-app-name-row">
+<input autocomplete="off" class="font-control" id="appNameInput" maxlength="20" placeholder="输入应用名称" type="text"/>
+<button class="font-action" id="restoreAppName" type="button">恢复默认名称</button>
+</div>
+<div class="jb-font-field-note">修改后立即同步到桌面图标和壁纸预览。</div>
+</div>
 <div style="margin: 16px 0 10px;">
 <label class="form-label" for="iconGlassSlider" style="display: flex; justify-content: space-between; margin-bottom: 8px;">
 <span>图标玻璃质感</span>
@@ -9684,19 +9686,19 @@ document.addEventListener('DOMContentLoaded',()=>{
 <input aria-label="桌面圆角图标" class="font-control" id="desktopIconRadiusSlider" max="30" min="0" step="1" style="padding:8px 0;accent-color:var(--theme-accent);" type="range" value="17"/>
 <div class="jb-font-field-note">只调整桌面应用图标圆角，不影响 Dock 栏。</div>
 </div>
-<div class="jb-dock-settings" aria-label="Dock 栏设置">
-  <div class="jb-dock-setting-row">
-    <div class="jb-dock-setting-copy"><strong>显示 Dock 栏</strong><small>底部四格固定显示，开启后显示 Dock 栏背景</small></div>
-    <button aria-label="显示 Dock 栏" aria-checked="false" class="jb-dock-toggle" id="jing-beautify-dock-toggle" role="switch" type="button"></button>
-  </div>
-  <div class="jb-dock-opacity-control">
-    <label class="form-label" for="jing-beautify-dock-opacity"><span>Dock 栏透明度</span><strong id="jing-beautify-dock-opacity-value">45%</strong></label>
-    <input aria-label="Dock 栏透明度" class="jb-dock-opacity-slider" id="jing-beautify-dock-opacity" max="100" min="0" step="1" type="range" value="45"/>
-  </div>
-  <div class="jb-dock-opacity-control">
-    <label class="form-label" for="jing-beautify-dock-radius"><span>Dock 栏圆角度</span><strong id="jing-beautify-dock-radius-value">27 px</strong></label>
-    <input aria-label="Dock 栏圆角度" class="jb-dock-opacity-slider" id="jing-beautify-dock-radius" max="48" min="0" step="1" type="range" value="27"/>
-  </div>
+<div aria-label="Dock 栏设置" class="jb-dock-settings">
+<div class="jb-dock-setting-row">
+<div class="jb-dock-setting-copy"><strong>显示 Dock 栏</strong><small>底部四格固定显示，开启后显示 Dock 栏背景</small></div>
+<button aria-checked="false" aria-label="显示 Dock 栏" class="jb-dock-toggle" id="jing-beautify-dock-toggle" role="switch" type="button"></button>
+</div>
+<div class="jb-dock-opacity-control">
+<label class="form-label" for="jing-beautify-dock-opacity"><span>Dock 栏透明度</span><strong id="jing-beautify-dock-opacity-value">45%</strong></label>
+<input aria-label="Dock 栏透明度" class="jb-dock-opacity-slider" id="jing-beautify-dock-opacity" max="100" min="0" step="1" type="range" value="45"/>
+</div>
+<div class="jb-dock-opacity-control">
+<label class="form-label" for="jing-beautify-dock-radius"><span>Dock 栏圆角度</span><strong id="jing-beautify-dock-radius-value">27 px</strong></label>
+<input aria-label="Dock 栏圆角度" class="jb-dock-opacity-slider" id="jing-beautify-dock-radius" max="48" min="0" step="1" type="range" value="27"/>
+</div>
 </div>
 <label class="form-label" for="iconUrlInput">所选图标图片链接</label>
 <input autocomplete="url" class="font-control" id="iconUrlInput" inputmode="url" placeholder="粘贴图标图片链接" type="url"/>
@@ -9710,7 +9712,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 </section>
 <div id="desktopSettingsStatus"></div>
 </div>
-<section aria-label="锁屏设置" id="lockSettingsPanel" data-jing-module-owner="beautify">
+<section aria-label="锁屏设置" data-jing-module-owner="beautify" id="lockSettingsPanel">
 <header class="jb-settings-header">
 <button aria-label="返回美化设置" class="jb-settings-back" id="lockSettingsBack" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"></path></svg></button>
 <div class="jb-settings-title-wrap">
@@ -9732,7 +9734,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div><strong>启用浅色模式</strong><div class="jb-lock-help">开启显示白色文字，关闭显示黑色文字</div></div>
 <button aria-checked="false" aria-label="启用浅色模式" class="jb-lock-switch" id="lockWhiteTextToggle" role="switch" type="button"></button>
 </div>
-
 <div class="jb-lock-actions jb-lock-utility-actions">
 <button class="jb-lock-action" id="lockChangePassword" type="button">修改四位数密码</button>
 <button class="jb-lock-action" id="lockResetButton" type="button">恢复默认壁纸</button>
@@ -9872,22 +9873,22 @@ document.addEventListener('DOMContentLoaded',()=>{
 </div>
 </div>
 <label class="form-label" for="apiUrlInput" style="margin-top:16px">API 地址 (Base URL)</label>
-<input autocomplete="off" class="font-control" id="apiUrlInput" placeholder="https://api.openai.com/v1" type="url">
+<input autocomplete="off" class="font-control" id="apiUrlInput" placeholder="https://api.openai.com/v1" type="url"/>
 <label class="form-label" for="apiKeyInput" style="margin-top:12px">API 密钥 (Key)</label>
-<input autocomplete="off" class="font-control" id="apiKeyInput" placeholder="sk-..." type="password">
+<input autocomplete="off" class="font-control" id="apiKeyInput" placeholder="sk-..." type="password"/>
 <div class="btn-row">
 <button class="font-action" id="fetchModelsBtn" type="button">获取模型列表</button>
 </div>
 <label class="form-label" for="apiModelPickerBtn" style="margin-top:16px">选择模型</label>
-<button aria-haspopup="dialog" class="font-control api-model-picker-trigger" id="apiModelPickerBtn" type="button"><span id="apiModelPickerLabel">请先获取模型</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></button>
-<select aria-hidden="true" id="apiModelSelect" tabindex="-1" style="position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;left:-9999px!important"><option value="">请先获取模型</option></select>
+<button aria-haspopup="dialog" class="font-control api-model-picker-trigger" id="apiModelPickerBtn" type="button"><span id="apiModelPickerLabel">请先获取模型</span><svg aria-hidden="true" viewbox="0 0 24 24"><path d="m7 10 5 5 5-5"></path></svg></button>
+<select aria-hidden="true" id="apiModelSelect" style="position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;left:-9999px!important" tabindex="-1"><option value="">请先获取模型</option></select>
 <div class="api-advanced-options" style="margin-top:18px;padding:14px;border:1px solid var(--theme-border);border-radius:14px;background:var(--theme-card-soft,transparent)">
 <label for="apiStreamToggle" style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:650;color:var(--theme-text)">
 <span>流式输出</span>
-<input id="apiStreamToggle" style="width:18px;height:18px;accent-color:var(--theme-accent-deep);" type="checkbox"/>
-</label>
+<input id="apiStreamToggle" style="width:18px;height:18px;accent-color:var(--theme-accent-deep);" type="checkbox">
+</input></label>
 <div style="font-size:11px;color:var(--theme-text-muted);margin-top:5px">默认关闭；关闭时等待 AI 完整生成，再按下方间隔逐条显示。</div>
-<div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px"><label class="form-label" for="apiMessageDelayInput" style="margin:0">消息逐条显示间隔</label><span style="font-size:12px;color:var(--theme-text-muted)"><input id="apiMessageDelayInput" max="5000" min="0" step="100" style="width:76px;padding:6px;border:1px solid var(--theme-border);border-radius:8px;background:var(--theme-card);color:var(--theme-text)" type="number" value="650"/> ms</span></div>
+<div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px"><label class="form-label" for="apiMessageDelayInput" style="margin:0">消息逐条显示间隔</label><span style="font-size:12px;color:var(--theme-text-muted)"><input id="apiMessageDelayInput" max="5000" min="0" step="100" style="width:76px;padding:6px;border:1px solid var(--theme-border);border-radius:8px;background:var(--theme-card);color:var(--theme-text)" type="number" value="650"> ms</input></span></div>
 <div style="font-size:11px;color:var(--theme-text-muted);margin-top:5px">AI 完成生成后，按顺序逐条显示；0 表示不等待。默认 650 毫秒。</div>
 <div style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
 <label class="form-label" for="apiTemperatureInput" style="margin:0">温度（Temperature）</label>
@@ -9957,9 +9958,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 </div>
 </div>
 <label class="form-label" for="soundApiKeyInput" style="margin-top:16px">API Key</label>
-<input autocomplete="off" class="font-control" id="soundApiKeyInput" placeholder="请粘贴 API Key" type="password">
+<input autocomplete="off" class="font-control" id="soundApiKeyInput" placeholder="请粘贴 API Key" type="password"/>
 <label class="form-label" for="soundGroupIdInput" style="margin-top:12px">Group ID / 账户 ID</label>
-<input autocomplete="off" class="font-control" id="soundGroupIdInput" placeholder="例如：12345678" type="text">
+<input autocomplete="off" class="font-control" id="soundGroupIdInput" placeholder="例如：12345678" type="text"/>
 <label class="form-label" for="soundModelSelect" style="margin-top:12px">语音模型</label>
 <select class="font-control" id="soundModelSelect">
 <option value="speech-2.8-turbo">官方默认 · Speech 2.8 Turbo</option>
@@ -9968,7 +9969,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <option value="speech-2.6-hd">Speech 2.6 HD</option>
 </select>
 <label class="form-label" for="soundVoiceIdInput" style="margin-top:12px">默认音色 ID</label>
-<input autocomplete="off" class="font-control" id="soundVoiceIdInput" placeholder="例如：female-shaonv" type="text" value="female-shaonv">
+<input autocomplete="off" class="font-control" id="soundVoiceIdInput" placeholder="例如：female-shaonv" type="text" value="female-shaonv"/>
 <div class="btn-row" style="margin-top:20px">
 <button class="font-action" id="testSoundBtn" type="button">测试连接</button>
 <button class="font-action primary" id="saveSoundBtn" type="button">保存设置</button>
@@ -9986,11 +9987,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 </header>
 <section class="ds-card chat-effect-card">
 <div class="chat-effect-heading"><div><div class="font-section-title">短信铃声</div><div class="font-section-caption">所有新消息的默认提示音</div></div><button aria-checked="true" aria-label="短信铃声开关" class="chat-effect-switch" id="chatNoticeToggle" role="switch" type="button"><span aria-hidden="true" class="chat-effect-switch-thumb"></span></button></div>
-<div class="chat-effect-controls"><input aria-label="短信铃声链接" autocomplete="off" class="font-control chat-effect-url" id="chatNoticeUrl" inputmode="url" placeholder="粘贴提示音 URL" type="url"/><button aria-label="试听短信铃声" class="chat-effect-action chat-effect-preview" id="chatNoticePreview" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.8v12.4L18 12 8 5.8Z"/></svg><span>试听</span></button><button aria-label="重置短信铃声" class="chat-effect-action chat-effect-reset" id="chatNoticeReset" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M19 12a7 7 0 1 1-2-5"/></svg><span>重置</span></button></div>
+<div class="chat-effect-controls"><input aria-label="短信铃声链接" autocomplete="off" class="font-control chat-effect-url" id="chatNoticeUrl" inputmode="url" placeholder="粘贴提示音 URL" type="url"><button aria-label="试听短信铃声" class="chat-effect-action chat-effect-preview" id="chatNoticePreview" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M8 5.8v12.4L18 12 8 5.8Z"></path></svg><span>试听</span></button><button aria-label="重置短信铃声" class="chat-effect-action chat-effect-reset" id="chatNoticeReset" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M20 7v5h-5M19 12a7 7 0 1 1-2-5"></path></svg><span>重置</span></button></input></div>
 </section>
 <section class="ds-card chat-effect-card">
 <div class="chat-effect-heading"><div><div class="font-section-title">特别关心</div><div class="font-section-caption">置顶聊天的 AI 回复提示音</div></div><button aria-checked="true" aria-label="特别关心开关" class="chat-effect-switch" id="chatCareToggle" role="switch" type="button"><span aria-hidden="true" class="chat-effect-switch-thumb"></span></button></div>
-<div class="chat-effect-controls"><input aria-label="特别关心提示音链接" autocomplete="off" class="font-control chat-effect-url" id="chatCareUrl" inputmode="url" placeholder="粘贴提示音 URL" type="url"/><button aria-label="试听特别关心提示音" class="chat-effect-action chat-effect-preview" id="chatCarePreview" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.8v12.4L18 12 8 5.8Z"/></svg><span>试听</span></button><button aria-label="重置特别关心提示音" class="chat-effect-action chat-effect-reset" id="chatCareReset" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M19 12a7 7 0 1 1-2-5"/></svg><span>重置</span></button></div>
+<div class="chat-effect-controls"><input aria-label="特别关心提示音链接" autocomplete="off" class="font-control chat-effect-url" id="chatCareUrl" inputmode="url" placeholder="粘贴提示音 URL" type="url"><button aria-label="试听特别关心提示音" class="chat-effect-action chat-effect-preview" id="chatCarePreview" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M8 5.8v12.4L18 12 8 5.8Z"></path></svg><span>试听</span></button><button aria-label="重置特别关心提示音" class="chat-effect-action chat-effect-reset" id="chatCareReset" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M20 7v5h-5M19 12a7 7 0 1 1-2-5"></path></svg><span>重置</span></button></input></div>
 </section>
 <div aria-live="polite" class="chat-effect-status" id="chatEffectsStatus" role="status"></div>
 </section>
@@ -10005,7 +10006,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div aria-hidden="true" class="chat-search-drawer" id="chatSearchDrawer">
 <div class="chat-search-drawer-inner">
 <svg aria-hidden="true" class="chat-search-icon" viewbox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.7"></circle><path d="m16 16 4.5 4.5"></path></svg>
-<input aria-label="搜索聊天" autocomplete="off" id="chatContactSearch" placeholder="搜索聊天">
+<input aria-label="搜索聊天" autocomplete="off" id="chatContactSearch" placeholder="搜索聊天"/>
 </div>
 </div>
 <div class="chat-contact-view" id="chatContactView">
@@ -10013,7 +10014,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div class="chat-friends-search-wrap">
 <div class="chat-friends-search-inner">
 <svg aria-hidden="true" class="chat-search-icon" viewbox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.7"></circle><path d="m16 16 4.5 4.5"></path></svg>
-<input aria-label="搜索好友备注、昵称或真名" autocomplete="off" id="chatFriendsSearch" placeholder="搜索好友备注、昵称或真名" type="search">
+<input aria-label="搜索好友备注、昵称或真名" autocomplete="off" id="chatFriendsSearch" placeholder="搜索好友备注、昵称或真名" type="search"/>
 </div>
 </div>
 <div class="chat-qq-shortcuts">
@@ -10039,7 +10040,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div class="chat-room-view" hidden="" id="chatRoomView">
 <header class="chat-room-head"><button aria-label="返回联系人" class="chat-room-back" id="chatRoomBack" type="button">‹</button><img alt="角色头像" id="chatRoomAvatar"/><div class="chat-room-title"><strong id="chatRoomName">角色</strong><span id="chatRoomStatus">在线</span></div><button aria-label="角色设定" class="chat-room-details" id="chatRoomDetails" title="查看设定" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg></button></header>
 <div aria-live="polite" class="chat-message-list" id="chatMessageList"><div class="chat-ai-typing-indicator" hidden="" id="chatAITypingIndicator"><span class="chat-ai-typing-label" id="chatAITypingRemark">角色</span><span>正在输入中</span><i></i><i></i><i></i></div></div>
-<div id="chatReplyQuotePreview" class="chat-reply-quote-preview" hidden></div>
+<div class="chat-reply-quote-preview" hidden="" id="chatReplyQuotePreview"></div>
 <div class="chat-composer">
 <button aria-label="让角色回复" class="chat-composer-ai-button" id="chatCallAIButton" title="让角色回复" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5l3.5 2"></path></svg></button>
 <button aria-label="重回，重新生成回复" class="chat-regenerate-button" id="chatRegenerateButton" title="重回：重新生成回复" type="button">重回</button>
@@ -10047,17 +10048,14 @@ document.addEventListener('DOMContentLoaded',()=>{
 <button aria-label="表情" class="chat-composer-icon" id="chatComposerEmojiButton" title="表情" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"></path></svg></button>
 <button aria-label="更多" class="chat-composer-icon" id="chatComposerMoreButton" title="更多" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg></button>
 <button class="chat-send-button" hidden="" id="chatSendButton" type="button">发送</button>
-
-
 </div>
-<div class="chat-composer-popover chat-composer-more-menu jing-more-panel" hidden="" id="chatComposerMoreMenu" aria-label="更多功能">
-  <button class="jing-more-item" id="jingRegenerateAction" type="button" aria-label="重回"><span class="jing-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M19 12a7 7 0 1 1-2-5"/></svg></span><span>重回</span></button>
-  <button class="jing-more-item" id="jingNarrationAction" type="button" aria-label="旁白" aria-pressed="false"><span class="jing-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v11H9l-5 3v-14Z"/><path d="M8 9h8M8 13h5"/></svg></span><span>旁白</span></button>
-  <button class="jing-more-item" id="jingCameraAction" type="button" aria-label="相机"><span class="jing-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h3l1.5-2h7l1.5 2h3A1.5 1.5 0 0 1 21.5 9v9A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Z"/><circle cx="12" cy="13" r="3.5"/></svg></span><span>相机</span></button>
-  <button class="jing-more-item" id="jingAlbumAction" type="button" aria-label="相册"><span class="jing-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span><span>相册</span></button>
-  <button class="jing-more-item" id="jingMemoryAction" type="button" aria-label="记忆"><span class="jing-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5A3.5 3.5 0 0 0 4 8a3.5 3.5 0 0 0 1 6.7A3.5 3.5 0 0 0 8.5 19H12V5H9.5A3.5 3.5 0 0 0 7 4.5Z"/><path d="M17 4.5A3.5 3.5 0 0 1 20 8a3.5 3.5 0 0 1-1 6.7 3.5 3.5 0 0 1-3.5 4.3H12V5h2.5A3.5 3.5 0 0 1 17 4.5Z"/><path d="M8 9h1M8 13h1M15 9h1M15 13h1"/></svg></span><span>记忆</span></button>
-  <button class="jing-more-item" id="jingOfflineAction" type="button" aria-label="线下"><span class="jing-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5 9 14l3 2 7-8"/><path d="M14 8h5v5"/><path d="M4 4.5h5M4 8.5h3M4 12.5h2"/></svg></span><span>线下</span></button>
-  
+<div aria-label="更多功能" class="chat-composer-popover chat-composer-more-menu jing-more-panel" hidden="" id="chatComposerMoreMenu">
+<button aria-label="重回" class="jing-more-item" id="jingRegenerateAction" type="button"><span class="jing-more-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M20 7v5h-5"></path><path d="M19 12a7 7 0 1 1-2-5"></path></svg></span><span>重回</span></button>
+<button aria-label="旁白" aria-pressed="false" class="jing-more-item" id="jingNarrationAction" type="button"><span class="jing-more-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 5.5h16v11H9l-5 3v-14Z"></path><path d="M8 9h8M8 13h5"></path></svg></span><span>旁白</span></button>
+<button aria-label="相机" class="jing-more-item" id="jingCameraAction" type="button"><span class="jing-more-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 7.5h3l1.5-2h7l1.5 2h3A1.5 1.5 0 0 1 21.5 9v9A1.5 1.5 0 0 1 20 19.5H4A1.5 1.5 0 0 1 2.5 18V9A1.5 1.5 0 0 1 4 7.5Z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span><span>相机</span></button>
+<button aria-label="相册" class="jing-more-item" id="jingAlbumAction" type="button"><span class="jing-more-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><rect height="18" rx="2" width="18" x="3" y="3"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="m21 15-5-5L5 21"></path></svg></span><span>相册</span></button>
+<button aria-label="记忆" class="jing-more-item" id="jingMemoryAction" type="button"><span class="jing-more-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M7 4.5A3.5 3.5 0 0 0 4 8a3.5 3.5 0 0 0 1 6.7A3.5 3.5 0 0 0 8.5 19H12V5H9.5A3.5 3.5 0 0 0 7 4.5Z"></path><path d="M17 4.5A3.5 3.5 0 0 1 20 8a3.5 3.5 0 0 1-1 6.7 3.5 3.5 0 0 1-3.5 4.3H12V5h2.5A3.5 3.5 0 0 1 17 4.5Z"></path><path d="M8 9h1M8 13h1M15 9h1M15 13h1"></path></svg></span><span>记忆</span></button>
+<button aria-label="线下" class="jing-more-item" id="jingOfflineAction" type="button"><span class="jing-more-icon"><svg aria-hidden="true" viewbox="0 0 24 24"><path d="M4 19.5 9 14l3 2 7-8"></path><path d="M14 8h5v5"></path><path d="M4 4.5h5M4 8.5h3M4 12.5h2"></path></svg></span><span>线下</span></button>
 </div>
 </div>
 <section aria-label="聊天设置" class="chat-settings-screen" hidden="" id="chatSettingsScreen">
@@ -10074,9 +10072,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 </div>
 <div class="chat-settings-caption">消息设置</div>
 <div class="chat-settings-group">
-<div class="chat-settings-toggle-row"><span class="chat-settings-row-copy"><strong>置顶聊天</strong><small>将此会话优先显示</small></span><label class="chat-settings-switch"><input data-room-setting="pinned" type="checkbox"/><i></i></label></div>
-<div class="chat-settings-toggle-row"><span class="chat-settings-row-copy"><strong>特别关心</strong><small>标记这个聊天对象</small></span><label class="chat-settings-switch"><input data-room-setting="special" type="checkbox"/><i></i></label></div>
-<div class="chat-settings-toggle-row"><span class="chat-settings-row-copy"><strong>消息免打扰</strong><small>减少此会话的消息提醒</small></span><label class="chat-settings-switch"><input data-room-setting="muted" type="checkbox"/><i></i></label></div>
+<div class="chat-settings-toggle-row"><span class="chat-settings-row-copy"><strong>置顶聊天</strong><small>将此会话优先显示</small></span><label class="chat-settings-switch"><input data-room-setting="pinned" type="checkbox"><i></i></input></label></div>
+<div class="chat-settings-toggle-row"><span class="chat-settings-row-copy"><strong>特别关心</strong><small>标记这个聊天对象</small></span><label class="chat-settings-switch"><input data-room-setting="special" type="checkbox"><i></i></input></label></div>
+<div class="chat-settings-toggle-row"><span class="chat-settings-row-copy"><strong>消息免打扰</strong><small>减少此会话的消息提醒</small></span><label class="chat-settings-switch"><input data-room-setting="muted" type="checkbox"><i></i></input></label></div>
 </div>
 <div class="chat-settings-caption">表达模式</div>
 <div class="chat-settings-group">
@@ -10125,11 +10123,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 </section>
 </div>
 </section>
-
 <div class="chat-character-modal chat-start-modal" hidden="" id="chatStartModal"><section><header><strong>发起聊天</strong><button aria-label="关闭" id="chatStartModalClose" type="button">×</button></header><div class="chat-start-list" id="chatStartList"></div><div class="chat-start-empty" hidden="" id="chatStartEmpty">没有可发起聊天的角色</div></section></div>
-<div class="chat-character-modal chat-add-menu-modal" hidden="" id="chatAddMenuModal"><section><button id="chatStartChatOption" type="button">发起聊天</button><div class="chat-add-menu-divider" role="separator" aria-hidden="true"></div><button id="chatStartGroupOption" type="button">发起群聊</button></section></div>
+<div class="chat-character-modal chat-add-menu-modal" hidden="" id="chatAddMenuModal"><section><button id="chatStartChatOption" type="button">发起聊天</button><div aria-hidden="true" class="chat-add-menu-divider" role="separator"></div><button id="chatStartGroupOption" type="button">发起群聊</button></section></div>
 <div class="chat-character-modal" hidden="" id="chatCharacterModal"><section><header><strong id="chatModalTitle">角色设定</strong><button aria-label="关闭" id="chatModalClose" type="button">×</button></header><div id="chatModalBody"></div></section></div>
-
 <section aria-label="档案馆" class="app-screen" id="archive-screen">
 <div class="archive-shell">
 <header class="archive-top">
@@ -10169,24 +10165,22 @@ document.addEventListener('DOMContentLoaded',()=>{
 <header class="jing-memory-top" data-memory-pagebar="all">
 <button aria-label="返回桌面" class="jing-memory-back" id="memory-app-back" type="button">‹</button>
 <div class="jing-memory-heading"><strong id="memory-heading-title">资料库</strong><small id="memory-heading-subtitle">角色专属记忆档案</small></div>
-
 </header>
-<header class="jing-memory-top jing-memory-pagebar" data-memory-pagebar="memories" aria-label="共同记忆顶栏"><button aria-label="返回" class="jing-memory-back" data-memory-pagebar-back type="button">‹</button><div class="jing-memory-heading"><strong>共同记忆</strong><small>共同经历与长期保存的记忆</small></div></header>
-<header class="jing-memory-top jing-memory-pagebar" data-memory-pagebar="timeline" aria-label="时间栏顶栏"><button aria-label="返回" class="jing-memory-back" data-memory-pagebar-back type="button">‹</button><div class="jing-memory-heading"><strong>时间栏</strong><small>按事件实际发生时间顺序排列</small></div></header>
-<header class="jing-memory-top jing-memory-pagebar" data-memory-pagebar="about-me" aria-label="关于你自己顶栏"><button aria-label="返回" class="jing-memory-back" data-memory-pagebar-back type="button">‹</button><div class="jing-memory-heading"><strong>关于你自己</strong><small>只整理角色本人证据，按新增事实持续累积</small></div></header>
-<header class="jing-memory-top jing-memory-pagebar" data-memory-pagebar="about-her" aria-label="关于她顶栏"><button aria-label="返回" class="jing-memory-back" data-memory-pagebar-back type="button">‹</button><div class="jing-memory-heading"><strong>关于她</strong><small>只整理她本人证据，按新增事实持续累积</small></div></header>
+<header aria-label="共同记忆顶栏" class="jing-memory-top jing-memory-pagebar" data-memory-pagebar="memories"><button aria-label="返回" class="jing-memory-back" data-memory-pagebar-back="" type="button">‹</button><div class="jing-memory-heading"><strong>共同记忆</strong><small>共同经历与长期保存的记忆</small></div></header>
+<header aria-label="时间栏顶栏" class="jing-memory-top jing-memory-pagebar" data-memory-pagebar="timeline"><button aria-label="返回" class="jing-memory-back" data-memory-pagebar-back="" type="button">‹</button><div class="jing-memory-heading"><strong>时间栏</strong><small>按事件实际发生时间顺序排列</small></div></header>
+<header aria-label="关于你自己顶栏" class="jing-memory-top jing-memory-pagebar" data-memory-pagebar="about-me"><button aria-label="返回" class="jing-memory-back" data-memory-pagebar-back="" type="button">‹</button><div class="jing-memory-heading"><strong>关于你自己</strong><small>只整理角色本人证据，按新增事实持续累积</small></div></header>
+<header aria-label="关于她顶栏" class="jing-memory-top jing-memory-pagebar" data-memory-pagebar="about-her"><button aria-label="返回" class="jing-memory-back" data-memory-pagebar-back="" type="button">‹</button><div class="jing-memory-heading"><strong>关于她</strong><small>只整理她本人证据，按新增事实持续累积</small></div></header>
 <section aria-label="角色记忆档案馆" class="jing-memory-directory" id="memory-role-directory"><div class="jing-memory-directory-head"><span>PERSONAL MEMORY ARCHIVE</span><h2>角色记忆</h2><p>选择一位角色，进入他的专属记忆空间。</p></div><div class="jing-memory-role-grid" id="memory-role-grid"></div></section>
-<header class="jing-memory-top jing-memory-envelope-topbar" id="memory-envelope-topbar" aria-label="角色信封界面顶栏" hidden>
+<header aria-label="角色信封界面顶栏" class="jing-memory-top jing-memory-envelope-topbar" hidden="" id="memory-envelope-topbar">
 <button aria-label="返回角色列表" class="jing-memory-back" id="memory-envelope-back" type="button">‹</button>
 <div class="jing-memory-heading"><strong id="memory-envelope-heading">角色记忆</strong><small id="memory-envelope-subtitle">角色专属记忆空间</small></div>
 <div class="jing-memory-master-call" id="memory-master-call-wrap">
-  <button id="memory-master-call" type="button">整理记忆</button>
-  <p id="memory-master-call-feedback" role="status" aria-live="polite">汇总各应用送来的新增活动，跨应用去重并增量更新各记忆栏目</p>
+<button id="memory-master-call" type="button">整理记忆</button>
+<p aria-live="polite" id="memory-master-call-feedback" role="status">汇总各应用送来的新增活动，跨应用去重并增量更新各记忆栏目</p>
 </div>
 </header>
 <section aria-label="角色记忆信封" class="jing-memory-envelope-hero" hidden="" id="memory-envelope-hero">
 <div class="jing-envelope-stack"><div class="jing-envelope-photo" id="memory-hero-avatar"><span>档案</span></div><div class="jing-envelope-flap"></div><button aria-label="查看角色关系网中的面具" class="jing-envelope-seal" id="memory-relation-picker" title="选择关系网面具" type="button"><svg aria-hidden="true" viewbox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="2.1"></circle><path d="M12 3.5v4.4M4.65 16.25l3.8-2.2M19.35 16.25l-3.8-2.2"></path></svg></button><div class="jing-envelope-label"><small>PERSONAL ARCHIVE</small><strong id="memory-hero-name">角色记忆</strong><span id="memory-hero-mask">专属记忆档案</span></div><div class="jing-envelope-caption">“关于他的，是时间写下的答案。”</div></div>
-
 </section>
 <section aria-label="角色卡与面具绑定" class="jing-memory-binding" hidden="">
 <label><span>角色卡</span><select aria-label="选择角色卡" id="memory-role-select"><option value="">选择角色卡</option></select></label>
@@ -10196,151 +10190,146 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div aria-live="polite" class="jing-memory-status" hidden="" id="memory-binding-status"></div>
 <nav aria-label="记忆分类" class="jing-memory-feature-grid" hidden="" id="memory-feature-grid">
 <!-- 1. 共同记忆 -->
-  <button class="jing-folder-card active" data-memory-tab="memories" type="button">
-    <div class="folder-tabs"><span></span><span></span><span></span></div>
-    <div class="folder-inner">
-      <div class="bg-watermark">JING</div>
-      <div class="folder-layout">
-        <div class="folder-left">
-          <div class="folder-title">共同记忆 <span>Memory</span></div>
-          <div class="grid-box">
-            <div class="g-row full">
-              <span>提取来源</span>
-              <strong>角色对话 · 阅读 · 音乐</strong>
-            </div>
-            <div class="g-row half">
-              <div class="g-cell"><span>状态</span><strong>已整理</strong></div>
-              <div class="g-cell"><span>更新模式</span><strong>跨软件同步</strong></div>
-            </div>
-            <div class="g-row half last">
-              <div class="g-cell"><span>记忆总数</span><strong>128 条</strong></div>
-              <div class="g-cell"><span>最近更新</span><strong>今天</strong></div>
-            </div>
-          </div>
-        </div>
-        <div class="folder-right">
-          <div class="icon-stack">
-            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="currentColor" stroke="none">M</text></svg>
-            <svg viewBox="0 0 24 24"><polygon points="12,4 21,20 3,20"/><text x="12" y="17" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">M</text></svg>
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><text x="12" y="15" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">D</text></svg>
-          </div>
-          <div class="bottom-mark">MEMORY</div>
-        </div>
-      </div>
-    </div>
-  </button>
-
-  <!-- 2. 时间轴 -->
-  <button class="jing-folder-card" data-memory-tab="timeline" type="button">
-    <div class="folder-tabs"><span></span><span></span><span></span></div>
-    <div class="folder-inner">
-      <div class="bg-watermark">JING</div>
-      <div class="folder-layout">
-        <div class="folder-left">
-          <div class="folder-title">时间轴 <span>Timeline</span></div>
-          <div class="grid-box">
-            <div class="g-row full">
-              <span>轨迹追踪</span>
-              <strong>人生节点 · 客观事实</strong>
-            </div>
-            <div class="g-row half">
-              <div class="g-cell"><span>记录跨度</span><strong>2023 - 2026</strong></div>
-              <div class="g-cell"><span>状态</span><strong>按日归档</strong></div>
-            </div>
-            <div class="g-row half last">
-              <div class="g-cell"><span>视图</span><strong>连续时间线</strong></div>
-              <div class="g-cell"><span>权限</span><strong>角色可见</strong></div>
-            </div>
-          </div>
-        </div>
-        <div class="folder-right">
-          <div class="icon-stack">
-            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="currentColor" stroke="none">T</text></svg>
-            <svg viewBox="0 0 24 24"><polygon points="12,4 21,20 3,20"/><text x="12" y="17" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">T</text></svg>
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><text x="12" y="15" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">D</text></svg>
-          </div>
-          <div class="bottom-mark">TIMELINE</div>
-        </div>
-      </div>
-    </div>
-  </button>
-
-  <!-- 3. 关于你自己 -->
-  <button class="jing-folder-card" data-memory-tab="about-me" type="button">
-    <div class="folder-tabs"><span></span><span></span><span></span></div>
-    <div class="folder-inner">
-      <div class="bg-watermark">JING</div>
-      <div class="folder-layout">
-        <div class="folder-left">
-          <div class="folder-title">关于你自己 <span>Self</span></div>
-          <div class="grid-box">
-            <div class="g-row full">
-              <span>内在画像</span>
-              <strong>需求 · 价值观 · 行为模式</strong>
-            </div>
-            <div class="g-row half">
-              <div class="g-cell"><span>画像深度</span><strong>语义级分析</strong></div>
-              <div class="g-cell"><span>状态</span><strong>持续演进</strong></div>
-            </div>
-            <div class="g-row half last">
-              <div class="g-cell"><span>纠偏机制</span><strong>保留证据链</strong></div>
-              <div class="g-cell"><span>分析范围</span><strong>跨关系汇总</strong></div>
-            </div>
-          </div>
-        </div>
-        <div class="folder-right">
-          <div class="icon-stack">
-            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="currentColor" stroke="none">S</text></svg>
-            <svg viewBox="0 0 24 24"><polygon points="12,4 21,20 3,20"/><text x="12" y="17" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">S</text></svg>
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><text x="12" y="15" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">D</text></svg>
-          </div>
-          <div class="bottom-mark">SELF</div>
-        </div>
-      </div>
-    </div>
-  </button>
-
-  <!-- 4. 关于她 -->
-  <button class="jing-folder-card" data-memory-tab="about-her" type="button">
-    <div class="folder-tabs"><span></span><span></span><span></span></div>
-    <div class="folder-inner">
-      <div class="bg-watermark">JING</div>
-      <div class="folder-layout">
-        <div class="folder-left">
-          <div class="folder-title">关于她 <span>Her</span></div>
-          <div class="grid-box">
-            <div class="g-row full">
-              <span>关系对象</span>
-              <strong>独立视角 · 专属记忆</strong>
-            </div>
-            <div class="g-row half">
-              <div class="g-cell"><span>分析范围</span><strong>当前绑定面具</strong></div>
-              <div class="g-cell"><span>状态</span><strong>持续更新</strong></div>
-            </div>
-            <div class="g-row half last">
-              <div class="g-cell"><span>权限</span><strong>仅本关系可见</strong></div>
-              <div class="g-cell"><span>隐私保护</span><strong>独立隔离</strong></div>
-            </div>
-          </div>
-        </div>
-        <div class="folder-right">
-          <div class="icon-stack">
-            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="currentColor" stroke="none">H</text></svg>
-            <svg viewBox="0 0 24 24"><polygon points="12,4 21,20 3,20"/><text x="12" y="17" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">H</text></svg>
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><text x="12" y="15" text-anchor="middle" font-size="9" fill="currentColor" stroke="none">D</text></svg>
-          </div>
-          <div class="bottom-mark">HER</div>
-        </div>
-      </div>
-    </div>
-  </button>
-
+<button class="jing-folder-card active" data-memory-tab="memories" type="button">
+<div class="folder-tabs"><span></span><span></span><span></span></div>
+<div class="folder-inner">
+<div class="bg-watermark">JING</div>
+<div class="folder-layout">
+<div class="folder-left">
+<div class="folder-title">共同记忆 <span>Memory</span></div>
+<div class="grid-box">
+<div class="g-row full">
+<span>提取来源</span>
+<strong>角色对话 · 阅读 · 音乐</strong>
+</div>
+<div class="g-row half">
+<div class="g-cell"><span>状态</span><strong>已整理</strong></div>
+<div class="g-cell"><span>更新模式</span><strong>跨软件同步</strong></div>
+</div>
+<div class="g-row half last">
+<div class="g-cell"><span>记忆总数</span><strong>128 条</strong></div>
+<div class="g-cell"><span>最近更新</span><strong>今天</strong></div>
+</div>
+</div>
+</div>
+<div class="folder-right">
+<div class="icon-stack">
+<svg viewbox="0 0 24 24"><rect height="16" rx="1" width="16" x="4" y="4"></rect><text fill="currentColor" font-size="10" stroke="none" text-anchor="middle" x="12" y="16">M</text></svg>
+<svg viewbox="0 0 24 24"><polygon points="12,4 21,20 3,20"></polygon><text fill="currentColor" font-size="9" stroke="none" text-anchor="middle" x="12" y="17">M</text></svg>
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><text fill="currentColor" font-size="9" stroke="none" text-anchor="middle" x="12" y="15">D</text></svg>
+</div>
+<div class="bottom-mark">MEMORY</div>
+</div>
+</div>
+</div>
+</button>
+<!-- 2. 时间轴 -->
+<button class="jing-folder-card" data-memory-tab="timeline" type="button">
+<div class="folder-tabs"><span></span><span></span><span></span></div>
+<div class="folder-inner">
+<div class="bg-watermark">JING</div>
+<div class="folder-layout">
+<div class="folder-left">
+<div class="folder-title">时间轴 <span>Timeline</span></div>
+<div class="grid-box">
+<div class="g-row full">
+<span>轨迹追踪</span>
+<strong>人生节点 · 客观事实</strong>
+</div>
+<div class="g-row half">
+<div class="g-cell"><span>记录跨度</span><strong>2023 - 2026</strong></div>
+<div class="g-cell"><span>状态</span><strong>按日归档</strong></div>
+</div>
+<div class="g-row half last">
+<div class="g-cell"><span>视图</span><strong>连续时间线</strong></div>
+<div class="g-cell"><span>权限</span><strong>角色可见</strong></div>
+</div>
+</div>
+</div>
+<div class="folder-right">
+<div class="icon-stack">
+<svg viewbox="0 0 24 24"><rect height="16" rx="1" width="16" x="4" y="4"></rect><text fill="currentColor" font-size="10" stroke="none" text-anchor="middle" x="12" y="16">T</text></svg>
+<svg viewbox="0 0 24 24"><polygon points="12,4 21,20 3,20"></polygon><text fill="currentColor" font-size="9" stroke="none" text-anchor="middle" x="12" y="17">T</text></svg>
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><text fill="currentColor" font-size="9" stroke="none" text-anchor="middle" x="12" y="15">D</text></svg>
+</div>
+<div class="bottom-mark">TIMELINE</div>
+</div>
+</div>
+</div>
+</button>
+<!-- 3. 关于你自己 -->
+<button class="jing-folder-card" data-memory-tab="about-me" type="button">
+<div class="folder-tabs"><span></span><span></span><span></span></div>
+<div class="folder-inner">
+<div class="bg-watermark">JING</div>
+<div class="folder-layout">
+<div class="folder-left">
+<div class="folder-title">关于你自己 <span>Self</span></div>
+<div class="grid-box">
+<div class="g-row full">
+<span>内在画像</span>
+<strong>需求 · 价值观 · 行为模式</strong>
+</div>
+<div class="g-row half">
+<div class="g-cell"><span>画像深度</span><strong>语义级分析</strong></div>
+<div class="g-cell"><span>状态</span><strong>持续演进</strong></div>
+</div>
+<div class="g-row half last">
+<div class="g-cell"><span>纠偏机制</span><strong>保留证据链</strong></div>
+<div class="g-cell"><span>分析范围</span><strong>跨关系汇总</strong></div>
+</div>
+</div>
+</div>
+<div class="folder-right">
+<div class="icon-stack">
+<svg viewbox="0 0 24 24"><rect height="16" rx="1" width="16" x="4" y="4"></rect><text fill="currentColor" font-size="10" stroke="none" text-anchor="middle" x="12" y="16">S</text></svg>
+<svg viewbox="0 0 24 24"><polygon points="12,4 21,20 3,20"></polygon><text fill="currentColor" font-size="9" stroke="none" text-anchor="middle" x="12" y="17">S</text></svg>
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><text fill="currentColor" font-size="9" stroke="none" text-anchor="middle" x="12" y="15">D</text></svg>
+</div>
+<div class="bottom-mark">SELF</div>
+</div>
+</div>
+</div>
+</button>
+<!-- 4. 关于她 -->
+<button class="jing-folder-card" data-memory-tab="about-her" type="button">
+<div class="folder-tabs"><span></span><span></span><span></span></div>
+<div class="folder-inner">
+<div class="bg-watermark">JING</div>
+<div class="folder-layout">
+<div class="folder-left">
+<div class="folder-title">关于她 <span>Her</span></div>
+<div class="grid-box">
+<div class="g-row full">
+<span>关系对象</span>
+<strong>独立视角 · 专属记忆</strong>
+</div>
+<div class="g-row half">
+<div class="g-cell"><span>分析范围</span><strong>当前绑定面具</strong></div>
+<div class="g-cell"><span>状态</span><strong>持续更新</strong></div>
+</div>
+<div class="g-row half last">
+<div class="g-cell"><span>权限</span><strong>仅本关系可见</strong></div>
+<div class="g-cell"><span>隐私保护</span><strong>独立隔离</strong></div>
+</div>
+</div>
+</div>
+<div class="folder-right">
+<div class="icon-stack">
+<svg viewbox="0 0 24 24"><rect height="16" rx="1" width="16" x="4" y="4"></rect><text fill="currentColor" font-size="10" stroke="none" text-anchor="middle" x="12" y="16">H</text></svg>
+<svg viewbox="0 0 24 24"><polygon points="12,4 21,20 3,20"></polygon><text fill="currentColor" font-size="9" stroke="none" text-anchor="middle" x="12" y="17">H</text></svg>
+<svg viewbox="0 0 24 24"><circle cx="12" cy="12" r="8"></circle><text fill="currentColor" font-size="9" stroke="none" text-anchor="middle" x="12" y="15">D</text></svg>
+</div>
+<div class="bottom-mark">HER</div>
+</div>
+</div>
+</div>
+</button>
 </nav>
 <main class="jing-memory-main" hidden="" id="memory-main">
 <section aria-label="记忆内容" class="jing-memory-pane active" data-memory-pane="memories">
-
 <div class="jing-memory-summary-strip"><span>已整理记忆</span><strong id="memory-stat-total">0</strong><span>条记忆</span><span class="jing-memory-summary-sep">·</span><span>本地存储</span></div>
-<div class="jing-memory-filter-group jing-memory-tier-filter jing-memory-reference-tabs" aria-label="记忆分类">
+<div aria-label="记忆分类" class="jing-memory-filter-group jing-memory-tier-filter jing-memory-reference-tabs">
 <button class="active" data-memory-tier="all" type="button">全部</button>
 <button data-memory-tier="fragment" type="button">碎片</button>
 <button data-memory-tier="daily" type="button">日常</button>
@@ -10349,7 +10338,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 <button data-memory-tier="anchor" type="button">锚点</button>
 </div>
 <div class="jing-memory-search"><input aria-label="搜索记忆" autocomplete="off" id="memory-search-input" placeholder="搜索一件事、一个人、一句话…" type="search"/><button id="memory-search-button" type="button">搜索</button><button aria-label="清空搜索" id="memory-search-clear" type="button">×</button></div>
-<div hidden aria-hidden="true" class="jing-memory-legacy-controls"><div aria-label="软件记忆分类" class="jing-memory-filter-group"><button class="active" data-memory-source="all" type="button">全部</button><button data-memory-source="conversation" type="button">角色对话</button><button data-memory-source="reading" type="button">阅读书友</button><button data-memory-source="relationship" type="button">关系网</button><button data-memory-source="music" type="button">音乐</button></div><strong id="memory-stat-anchor">0</strong><strong id="memory-stat-long">0</strong><strong id="memory-stat-recent">0</strong></div>
+<div aria-hidden="true" class="jing-memory-legacy-controls" hidden=""><div aria-label="软件记忆分类" class="jing-memory-filter-group"><button class="active" data-memory-source="all" type="button">全部</button><button data-memory-source="conversation" type="button">角色对话</button><button data-memory-source="reading" type="button">阅读书友</button><button data-memory-source="relationship" type="button">关系网</button><button data-memory-source="music" type="button">音乐</button></div><strong id="memory-stat-anchor">0</strong><strong id="memory-stat-long">0</strong><strong id="memory-stat-recent">0</strong></div>
 <div class="jing-memory-list-head"><strong id="memory-list-title">记忆摘要</strong><span id="memory-list-count">0 条</span><button id="memory-add-button" type="button">＋ 添加记忆</button></div>
 <div class="jing-memory-list" id="memory-list"></div>
 </section>
@@ -10394,7 +10383,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div class="reader-menu-divider"></div>
 <button data-menu-action="background" role="menuitem"><span class="menu-icon">▧</span><span>自定义主页背景</span></button>
 <button data-menu-action="reset-background" role="menuitem"><span class="menu-icon">↺</span><span>恢复默认背景</span></button>
-
 </div>
 <main class="reader-main" id="reader-main">
 <section class="reader-page" id="reader-shelf-page">
@@ -10416,29 +10404,29 @@ document.addEventListener('DOMContentLoaded',()=>{
 <div id="reader-idea-feed"></div><button aria-label="发布新想法" class="reader-fab" id="reader-fab-post" type="button">+</button>
 </section>
 <section class="reader-page reader-short-story-page" hidden="" id="reader-books-page">
- <div class="short-story-hero"><div><div class="reader-eyebrow">SHORT STORY FEED</div><h1>短篇</h1><p>短篇小说、同人、观影体和论坛体，和长篇小说分开放。</p></div><button type="button" id="reader-short-story-add" aria-label="新建短篇">＋</button></div>
- <div class="short-story-filters" role="group" aria-label="短篇分类"><button type="button" class="active" data-story-filter="all">全部</button><button type="button" data-story-filter="mine">我的作品</button><button type="button" data-story-filter="fanfic">同人</button><button type="button" data-story-filter="other">其他</button></div>
- <div id="reader-short-story-feed" class="short-story-feed"><div class="reader-empty"><strong>这里还没有短篇</strong><p>点击右上角＋，创建你的第一篇短篇故事。</p></div></div>
- <button type="button" class="reader-fab short-story-fab" id="reader-short-story-fab" aria-label="新建短篇">＋</button>
+<div class="short-story-hero"><div><div class="reader-eyebrow">SHORT STORY FEED</div><h1>短篇</h1><p>短篇小说、同人、观影体和论坛体，和长篇小说分开放。</p></div><button aria-label="新建短篇" id="reader-short-story-add" type="button">＋</button></div>
+<div aria-label="短篇分类" class="short-story-filters" role="group"><button class="active" data-story-filter="all" type="button">全部</button><button data-story-filter="mine" type="button">我的作品</button><button data-story-filter="fanfic" type="button">同人</button><button data-story-filter="other" type="button">其他</button></div>
+<div class="short-story-feed" id="reader-short-story-feed"><div class="reader-empty"><strong>这里还没有短篇</strong><p>点击右上角＋，创建你的第一篇短篇故事。</p></div></div>
+<button aria-label="新建短篇" class="reader-fab short-story-fab" id="reader-short-story-fab" type="button">＋</button>
 </section>
 <section class="reader-page reader-me-page" hidden="" id="reader-profile-page">
- <div class="reader-me-hero">
-  <div class="reader-me-hero-top"><div class="reader-me-avatar" id="reader-me-avatar">阅</div><div class="reader-me-identity"><strong id="reader-me-name">我的阅读空间</strong><span id="reader-me-subtitle">记录每一次阅读与创作</span></div><button type="button" class="reader-me-edit" id="reader-me-mask-shortcut" aria-expanded="false">切换个人⌄</button></div>
-  <div class="reader-mask-picker reader-mask-picker-top" id="reader-mask-picker" hidden></div>
-  <div class="reader-me-stats"><div><strong id="reader-profile-count">0 本</strong><span>小说藏书</span></div><div><strong id="reader-me-story-count">0 篇</strong><span>短篇作品</span></div><div><strong id="reader-profile-weekly">0 分钟</strong><span>本周阅读</span></div></div>
- </div>
- <div class="reader-me-section">
-  <div class="reader-me-section-title">共读设置</div>
-  <section class="reader-coread-settings reader-coread-compact" aria-label="共读设置" id="reader-coread-settings">
-  <div class="reader-coread-compact-top"><div class="reader-coread-compact-title"><strong>共读</strong><span>让角色陪你阅读</span></div><label class="reader-coread-compact-toggle" for="reader-coread-enabled" aria-label="开启或关闭共读"><input id="reader-coread-enabled" type="checkbox" role="switch" aria-label="共读开关"><i aria-hidden="true"></i></label></div>
-  <div class="reader-coread-compact-person"><div class="reader-coread-avatar" id="reader-coread-avatar">?</div><div class="reader-coread-person-copy"><strong id="reader-coread-role-name">尚未绑定角色</strong><small>选择一个角色卡作为共读伙伴</small></div><button type="button" class="reader-coread-role-trigger" id="reader-coread-role-trigger" aria-expanded="false">更换</button></div>
-  <select id="reader-coread-role" aria-label="绑定角色卡" hidden><option value="">不绑定角色卡</option></select>
-  <div class="reader-coread-role-picker" id="reader-coread-role-picker" hidden></div>
-  <div class="reader-coread-advanced"><label for="reader-coread-default-chapters">默认共读章节数</label><div><input id="reader-coread-default-chapters" type="number" min="1" max="30" value="3"><span>章</span></div></div>
-  <p class="reader-coread-settings-note" id="reader-coread-settings-note" hidden>共读记录和进度保存在本机；下次打开同一本书会接着上次的进度。</p>
+<div class="reader-me-hero">
+<div class="reader-me-hero-top"><div class="reader-me-avatar" id="reader-me-avatar">阅</div><div class="reader-me-identity"><strong id="reader-me-name">我的阅读空间</strong><span id="reader-me-subtitle">记录每一次阅读与创作</span></div><button aria-expanded="false" class="reader-me-edit" id="reader-me-mask-shortcut" type="button">切换个人⌄</button></div>
+<div class="reader-mask-picker reader-mask-picker-top" hidden="" id="reader-mask-picker"></div>
+<div class="reader-me-stats"><div><strong id="reader-profile-count">0 本</strong><span>小说藏书</span></div><div><strong id="reader-me-story-count">0 篇</strong><span>短篇作品</span></div><div><strong id="reader-profile-weekly">0 分钟</strong><span>本周阅读</span></div></div>
+</div>
+<div class="reader-me-section">
+<div class="reader-me-section-title">共读设置</div>
+<section aria-label="共读设置" class="reader-coread-settings reader-coread-compact" id="reader-coread-settings">
+<div class="reader-coread-compact-top"><div class="reader-coread-compact-title"><strong>共读</strong><span>让角色陪你阅读</span></div><label aria-label="开启或关闭共读" class="reader-coread-compact-toggle" for="reader-coread-enabled"><input aria-label="共读开关" id="reader-coread-enabled" role="switch" type="checkbox"/><i aria-hidden="true"></i></label></div>
+<div class="reader-coread-compact-person"><div class="reader-coread-avatar" id="reader-coread-avatar">?</div><div class="reader-coread-person-copy"><strong id="reader-coread-role-name">尚未绑定角色</strong><small>选择一个角色卡作为共读伙伴</small></div><button aria-expanded="false" class="reader-coread-role-trigger" id="reader-coread-role-trigger" type="button">更换</button></div>
+<select aria-label="绑定角色卡" hidden="" id="reader-coread-role"><option value="">不绑定角色卡</option></select>
+<div class="reader-coread-role-picker" hidden="" id="reader-coread-role-picker"></div>
+<div class="reader-coread-advanced"><label for="reader-coread-default-chapters">默认共读章节数</label><div><input id="reader-coread-default-chapters" max="30" min="1" type="number" value="3"/><span>章</span></div></div>
+<p class="reader-coread-settings-note" hidden="" id="reader-coread-settings-note">共读记录和进度保存在本机；下次打开同一本书会接着上次的进度。</p>
 </section>
- </div>
- <button class="reader-danger-soft" id="reader-clear-progress" type="button">清除所有阅读进度</button>
+</div>
+<button class="reader-danger-soft" id="reader-clear-progress" type="button">清除所有阅读进度</button>
 </section>
 </main>
 <nav aria-label="阅读导航" class="reader-bottom-nav" id="reader-bottom-nav">
@@ -10456,33 +10444,33 @@ document.addEventListener('DOMContentLoaded',()=>{
 <span id="reader-current-subtitle">慢慢读，不着急</span>
 </div>
 <button aria-label="阅读设置" class="reader-text-action" hidden="" id="reader-open-settings" title="阅读设置"></button>
-<button aria-label="编辑自己的作品" class="reader-head-icon-btn reader-authoring-btn" hidden id="reader-authoring-btn" title="写作">写作</button>
+<button aria-label="编辑自己的作品" class="reader-head-icon-btn reader-authoring-btn" hidden="" id="reader-authoring-btn" title="写作">写作</button>
 <button aria-label="切换夜间模式" class="reader-head-icon-btn" id="reader-night-mode-btn" title="切换夜间模式">
 <svg aria-hidden="true" viewbox="0 0 24 24">
 <path d="M19.5 15.1A8.5 8.5 0 0 1 8.9 4.5 8.5 8.5 0 1 0 19.5 15.1Z"></path>
 </svg>
 </button>
 </header>
-<section class="reader-coread-dock" id="reader-coread-dock" hidden aria-label="AI 共读聊天">
-  <div class="reader-coread-dock-head" id="reader-coread-dock-head"><div class="reader-coread-dock-person"><div class="reader-coread-avatar small" id="reader-coread-dock-avatar">?</div><div><strong id="reader-coread-dock-name">AI 书友</strong><small id="reader-coread-dock-status">等待开始共读</small></div></div><div class="reader-coread-head-actions"><button type="button" id="reader-coread-collapse" aria-label="收起共读聊天">收起</button></div></div>
-  <div class="reader-coread-setup" id="reader-coread-setup"><div class="reader-coread-setup-identity"><div class="reader-coread-avatar tiny" id="reader-coread-setup-avatar">?</div><div><strong>本次一起读</strong><small>选择想和 TA 共读的章节数</small></div></div><div class="reader-coread-chapter-stepper"><button type="button" id="reader-coread-chapter-minus" aria-label="减少章节">−</button><input id="reader-coread-chapters" type="number" min="1" max="30" value="3"><button type="button" id="reader-coread-chapter-plus" aria-label="增加章节">＋</button><span>章</span></div><button type="button" class="reader-coread-start" id="reader-coread-start">开始共读</button></div>
-  <div class="reader-coread-session-meta" id="reader-coread-session-meta" hidden></div>
-  <div class="reader-coread-chat-list" id="reader-coread-chat-list" aria-live="polite"><div class="reader-coread-empty">开始共读后，TA 会以角色本人的方式和你聊这本书。</div></div>
-  <form class="reader-coread-composer" id="reader-coread-composer"><input id="reader-coread-message" maxlength="2000" autocomplete="off" placeholder="写下想说的话…"><button type="submit" id="reader-coread-send">发送</button><button type="button" id="reader-coread-call-ai" class="reader-coread-call-ai">回复</button></form>
-  <div class="reader-coread-dock-foot"><span id="reader-coread-progress-note">阅读进度会自动保存</span><button type="button" id="reader-coread-finish" hidden>结束共读 · 总结并计入时间栏</button></div>
+<section aria-label="AI 共读聊天" class="reader-coread-dock" hidden="" id="reader-coread-dock">
+<div class="reader-coread-dock-head" id="reader-coread-dock-head"><div class="reader-coread-dock-person"><div class="reader-coread-avatar small" id="reader-coread-dock-avatar">?</div><div><strong id="reader-coread-dock-name">AI 书友</strong><small id="reader-coread-dock-status">等待开始共读</small></div></div><div class="reader-coread-head-actions"><button aria-label="收起共读聊天" id="reader-coread-collapse" type="button">收起</button></div></div>
+<div class="reader-coread-setup" id="reader-coread-setup"><div class="reader-coread-setup-identity"><div class="reader-coread-avatar tiny" id="reader-coread-setup-avatar">?</div><div><strong>本次一起读</strong><small>选择想和 TA 共读的章节数</small></div></div><div class="reader-coread-chapter-stepper"><button aria-label="减少章节" id="reader-coread-chapter-minus" type="button">−</button><input id="reader-coread-chapters" max="30" min="1" type="number" value="3"/><button aria-label="增加章节" id="reader-coread-chapter-plus" type="button">＋</button><span>章</span></div><button class="reader-coread-start" id="reader-coread-start" type="button">开始共读</button></div>
+<div class="reader-coread-session-meta" hidden="" id="reader-coread-session-meta"></div>
+<div aria-live="polite" class="reader-coread-chat-list" id="reader-coread-chat-list"><div class="reader-coread-empty">开始共读后，TA 会以角色本人的方式和你聊这本书。</div></div>
+<form class="reader-coread-composer" id="reader-coread-composer"><input autocomplete="off" id="reader-coread-message" maxlength="2000" placeholder="写下想说的话…"/><button id="reader-coread-send" type="submit">发送</button><button class="reader-coread-call-ai" id="reader-coread-call-ai" type="button">回复</button></form>
+<div class="reader-coread-dock-foot"><span id="reader-coread-progress-note">阅读进度会自动保存</span><button hidden="" id="reader-coread-finish" type="button">结束共读 · 总结并计入时间栏</button></div>
 </section>
 <div class="reader-reading-content" id="reader-reading-content" tabindex="0"></div>
-<div class="reader-pdf-area" hidden="" id="reader-pdf-area"><div class="reader-pdf-toolbar" id="reader-pdf-toolbar"><button id="reader-pdf-fit" type="button">适合宽度</button><button aria-label="缩小 PDF" id="reader-pdf-zoom-out" type="button">−</button><span id="reader-pdf-zoom-label">100%</span><button aria-label="放大 PDF" id="reader-pdf-zoom-in" type="button">＋</button><button id="reader-pdf-open" type="button">新页面打开</button></div><div aria-label="PDF 连续页面" class="reader-pdf-pages" id="reader-pdf-pages"></div><div class="reader-pdf-fallback" hidden="" id="reader-pdf-fallback"><p>当前浏览器未能加载 PDF 页面渲染组件，可以使用系统 PDF 阅读器打开。</p><button id="reader-pdf-fallback-open" type="button">用系统阅读器打开 PDF</button></div><iframe hidden="" id="reader-pdf-frame" loading="eager" title="系统 PDF 阅读器备用窗口"></iframe></div>
-<footer class="reader-reading-bottom"><div class="reader-progress-head"><span id="reader-progress-kind">阅读进度</span><span id="reader-progress-label">0%</span></div><input aria-label="阅读进度" id="reader-progress-slider" max="1000" min="0" type="range" value="0"><div class="reader-reading-tools"><button id="reader-open-catalog" type="button"><span aria-hidden="true" class="tool-symbol">☷</span><span>目录</span></button><button id="reader-jump-progress" type="button"><span aria-hidden="true" class="tool-symbol">○</span><span>进度</span></button><button id="reader-bottom-settings" type="button"><span aria-hidden="true" class="tool-symbol">⚙</span><span>设置</span></button></div></footer><button aria-label="显示或隐藏阅读工具栏" class="reader-edge-hit reader-edge-hit-top" id="reader-top-reveal" type="button"></button><button aria-label="显示或隐藏阅读工具栏" class="reader-edge-hit reader-edge-hit-bottom" id="reader-bottom-reveal" type="button"></button>
+<div class="reader-pdf-area" hidden="" id="reader-pdf-area"><div class="reader-pdf-toolbar" id="reader-pdf-toolbar"><button id="reader-pdf-fit" type="button">适合宽度</button><button aria-label="缩小 PDF" id="reader-pdf-zoom-out" type="button">−</button><span id="reader-pdf-zoom-label">100%</span><button aria-label="放大 PDF" id="reader-pdf-zoom-in" type="button">＋</button><button id="reader-pdf-open" type="button">新页面打开</button></div><div aria-label="PDF 连续页面" class="reader-pdf-pages" id="reader-pdf-pages"></div><div class="reader-pdf-fallback" hidden="" id="reader-pdf-fallback"><p>当前浏览器未能加载 PDF 页面渲染组件，可以使用系统 PDF 阅读器打开。</p><button id="reader-pdf-fallback-open" type="button">用系统阅读器打开 PDF</button></div><iframe hidden="" id="reader-pdf-frame" loading="lazy" title="系统 PDF 阅读器备用窗口"></iframe></div>
+<footer class="reader-reading-bottom"><div class="reader-progress-head"><span id="reader-progress-kind">阅读进度</span><span id="reader-progress-label">0%</span></div><input aria-label="阅读进度" id="reader-progress-slider" max="1000" min="0" type="range" value="0"/><div class="reader-reading-tools"><button id="reader-open-catalog" type="button"><span aria-hidden="true" class="tool-symbol">☷</span><span>目录</span></button><button id="reader-jump-progress" type="button"><span aria-hidden="true" class="tool-symbol">○</span><span>进度</span></button><button id="reader-bottom-settings" type="button"><span aria-hidden="true" class="tool-symbol">⚙</span><span>设置</span></button></div></footer><button aria-label="显示或隐藏阅读工具栏" class="reader-edge-hit reader-edge-hit-top" id="reader-top-reveal" type="button"></button><button aria-label="显示或隐藏阅读工具栏" class="reader-edge-hit reader-edge-hit-bottom" id="reader-bottom-reveal" type="button"></button>
 </section>
-<input accept=".txt,.pdf,.cbz,.zip,.jpg,.jpeg,.png,.webp,.gif,.avif,.bmp,.heic,.heif,text/plain,application/pdf,application/zip,image/*" hidden="" id="reader-file-input" multiple="" type="file">
-<input accept="image/*" hidden="" id="reader-cover-input" type="file">
-<input accept="image/*" hidden="" id="reader-bg-input" type="file">
+<input accept=".txt,.pdf,.cbz,.zip,.jpg,.jpeg,.png,.webp,.gif,.avif,.bmp,.heic,.heif,text/plain,application/pdf,application/zip,image/*" hidden="" id="reader-file-input" multiple="" type="file"/>
+<input accept="image/*" hidden="" id="reader-cover-input" type="file"/>
+<input accept="image/*" hidden="" id="reader-bg-input" type="file"/>
 <div class="reader-overlay" hidden="" id="reader-overlay"><div aria-labelledby="reader-sheet-title" aria-modal="true" class="reader-sheet" role="dialog"><div class="reader-sheet-grabber"></div><div class="reader-sheet-head"><strong id="reader-sheet-title">设置</strong><button aria-label="关闭" id="reader-sheet-close">×</button></div><div id="reader-sheet-body"></div></div></div>
 <div aria-live="polite" class="reader-toast" id="reader-toast" role="status"></div>
 </section>
-<section aria-label="锁屏预览" id="lockScreenPreview" data-jing-module-owner="beautify">
-<img alt="锁屏壁纸预览" id="lockPreviewBg">
+<section aria-label="锁屏预览" data-jing-module-owner="beautify" id="lockScreenPreview">
+<img alt="锁屏壁纸预览" id="lockPreviewBg"/>
 <video autoplay="" id="lockPreviewVideo" loop="" muted="" playsinline=""></video>
 <div id="lockPreviewShade"></div>
 <button id="lockPreviewCancel" type="button">退出预览</button>
@@ -10672,7 +10660,7 @@ window.createContextMenu = function(items, x, y) {
 };
 function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 </script>
-<script id="jing-core-services-v2" data-owner="platform-core" data-layer="shared-services">
+<script data-layer="shared-services" data-owner="platform-core" id="jing-core-services-v2">
 /* --- jing-core-service-boundary-v1 --- */
 /* 京莹机公共服务边界：App 只通过 services 访问共享数据；不接管各 App 的业务状态。 */
 (function(global){
@@ -10736,7 +10724,7 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
 })(window);
 /* ===== 公共架构层结束；各 App 业务仍由各自原生控制器负责 ===== */
 </script>
-<script id="jing-app-shell-runtime-v1" data-owner="platform-core" data-architecture="consolidated">
+<script data-architecture="consolidated" data-owner="platform-core" id="jing-app-shell-runtime-v1">
 (() => {
   'use strict';
   const iconPaths = {
@@ -10870,7 +10858,7 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
   const wallpaperPreviewImage = document.getElementById('wallpaperPreviewImage');
   const wallpaperVideo = document.getElementById('wallpaperVideo');
   const wallpaperPreviewVideo = document.getElementById('wallpaperPreviewVideo');
-  const DEFAULT_WALLPAPER = 'https://imgbed.heliar.top/i/e9-3d_diTPvM6QU8_IMG_20261116_225242.jpg';
+  const DEFAULT_WALLPAPER = 'https://imgbed.heliar.top/i/p5fDvUnOU-n7jXBd_IMG_20261119_162237.jpg';
   const allDesktopApps = () => [...homeApps, ...jingBeautifyDockApps];
   const iconMarkup = id => {
     if (customIcons[id]) return `<img class="custom-icon-image" src="${escapeAttr(customIcons[id])}" alt="">`;
@@ -12006,7 +11994,7 @@ window.__jingResolveChatEndpoint = function(base) {
 
 })();
 })();</script>
-<script id="jing-beautify-settings-runtime-v1" data-owner="beautify">(()=>{
+<script data-owner="beautify" id="jing-beautify-settings-runtime-v1">(()=>{
   'use strict';
   /* JingBeautify independent runtime: global font, theme, interface texture, desktop and lock-screen settings.
      Desktop rendering is accessed only through the narrow host facade; settings state and UI behavior remain owned here. */
@@ -12172,6 +12160,17 @@ window.__jingResolveChatEndpoint = function(base) {
   const iconUrlInput = document.getElementById('iconUrlInput');
   const iconPreviewGrid = document.getElementById('iconPreviewGrid');
   const selectedIconName = document.getElementById('selectedIconName');
+  const appNameInput = document.getElementById('appNameInput');
+  const restoreAppNameButton = document.getElementById('restoreAppName');
+  const defaultAppNames = Object.fromEntries(homeApps.map(app => [app.id, app.name]));
+  const APP_NAMES_KEY = 'jing-custom-app-names-v1';
+  function loadCustomAppNames() {
+    try { const saved = JSON.parse(localStorage.getItem(APP_NAMES_KEY) || '{}'); if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+      homeApps.forEach(app => { const name = saved[app.id]; if (typeof name === 'string' && name.trim()) app.name = name.trim().slice(0,20); });
+    } } catch (_) {}
+  }
+  function persistCustomAppNames() { try { localStorage.setItem(APP_NAMES_KEY, JSON.stringify(Object.fromEntries(homeApps.map(app => [app.id, app.name])))); } catch (_) {} }
+  loadCustomAppNames();
   function validImageSource(value) { return /^(https?:\/\/|data:image\/|blob:)/i.test(String(value || '').trim()); }
   function isVideoSource(source) { return /^data:video\//i.test(source) || /\.(mp4|webm|mov|m4v|ogv)(?:[?#].*)?$/i.test(source) || /[?&](?:format|fm)=(?:mp4|webm|mov)(?:&|$)/i.test(source); }
   let motionWallpaperUrl = null, motionWallpaperObjectUrl = null, storedWallpaperObjectUrl = null;
@@ -12236,7 +12235,7 @@ window.__jingResolveChatEndpoint = function(base) {
       [wallpaperVideo, wallpaperPreviewVideo].forEach(el => { el.classList.remove('motion-hold'); if (el.src !== source) el.src = source; el.classList.add('active'); el.style.display = 'block'; el.play().catch(() => {}); });
     } else {
       [wallpaperVideo, wallpaperPreviewVideo].forEach(el => { el.pause(); el.removeAttribute('src'); el.load(); el.classList.remove('active','motion-hold'); el.style.display = 'none'; });
-      [wallpaperImage, wallpaperPreviewImage].forEach(image => { image.style.display = 'block'; image.style.opacity = '1'; image.style.filter = 'none'; image.style.mixBlendMode = 'normal'; image.src = source; image.onerror = () => { desktopSettingsStatus.textContent = '图片加载失败：请检查链接是否可直接访问，或改为从相册选择文件。'; }; image.onload = () => { image.onerror = null; }; });
+      [wallpaperImage, wallpaperPreviewImage].forEach(image => { image.style.display = 'block'; image.style.opacity = '1'; image.style.filter = 'none'; image.style.mixBlendMode = 'normal'; image.src = source; image.onerror = () => { desktopSettingsStatus.textContent = '默认壁纸图片加载失败：图片源服务器可能无法访问，请检查网络或图片直链。'; }; image.onload = () => { image.onerror = null; }; });
     }
   }
   function applyWallpaper(source, persist = true, motionUrl = null) {
@@ -12310,6 +12309,7 @@ window.__jingResolveChatEndpoint = function(base) {
     });
     const selected = apps.find(app => app.id === selectedIconId);
     selectedIconName.textContent = selected ? selected.name : '未选择';
+    if (appNameInput) appNameInput.value = selected ? selected.name : '';
     const current = customIcons[selectedIconId] || '';
     iconUrlInput.value = current.startsWith('data:') ? '' : current;
   }
@@ -12331,6 +12331,18 @@ window.__jingResolveChatEndpoint = function(base) {
   document.getElementById('desktopSettingRow').addEventListener('click', openDesktopSettings);
   document.getElementById('desktopPanelBack').addEventListener('click', closeDesktopSettings);
   iconPreviewGrid.addEventListener('click', event => { const item = event.target.closest('[data-icon-id]'); if (item) selectIcon(item.dataset.iconId); });
+  if (appNameInput) appNameInput.addEventListener('input', () => {
+    const app = appById[selectedIconId]; if (!app) return;
+    const nextName = appNameInput.value.slice(0,20); app.name = nextName;
+    selectedIconName.textContent = nextName || '未命名';
+    const tile = iconPreviewGrid.querySelector(`[data-icon-id="${selectedIconId}"] .icon-preview-name`); if (tile) tile.textContent = nextName || '未命名';
+    persistCustomAppNames(); renderDesktop(); renderWallpaperPreview();
+  });
+  if (restoreAppNameButton) restoreAppNameButton.addEventListener('click', () => {
+    const app = appById[selectedIconId]; if (!app) return;
+    app.name = defaultAppNames[selectedIconId] || app.name; persistCustomAppNames();
+    renderIconPreviewGrid(); renderDesktop(); renderWallpaperPreview(); desktopSettingsStatus.textContent = '已恢复默认应用名称。';
+  });
   document.getElementById('applyWallpaperUrl').addEventListener('click', () => applyWallpaper(wallpaperUrlInput.value));
   document.getElementById('chooseWallpaperFile').addEventListener('click', () => document.getElementById('wallpaperFileInput').click());
   document.getElementById('wallpaperFileInput').addEventListener('change', event => readWallpaperFiles(event.currentTarget));
@@ -12400,8 +12412,8 @@ window.__jingResolveChatEndpoint = function(base) {
  paint();
 })();
 })();</script>
-<script id="jing-beautify-lock-runtime-v1" data-owner="beautify">  (() => {
-    const DEFAULT_LOCK_WALLPAPER = 'https://imgbed.heliar.top/i/e9-3d_diTPvM6QU8_IMG_20261116_225242.jpg';
+<script data-owner="beautify" id="jing-beautify-lock-runtime-v1">  (() => {
+    const DEFAULT_LOCK_WALLPAPER = 'https://imgbed.heliar.top/i/4tLM6_DF9XA9Ltv1_IMG_20261119_162227.jpg';
     const $ = id => document.getElementById(id);
     const panel = $('lockSettingsPanel'), preview = $('lockScreenPreview');
     const bg = $('lockPreviewBg'), video = $('lockPreviewVideo');
@@ -12565,9 +12577,7 @@ window.__jingResolveChatEndpoint = function(base) {
 })();
 })();
 </script>
-
-
-<script id="jing-desktop-widgets-badge-runtime-v1" data-owner="desktop-widgets">
+<script data-owner="desktop-widgets" id="jing-desktop-widgets-badge-runtime-v1">
 (()=>{
  const $=id=>document.getElementById(id), badge=$('eBadgeWidget'), face=$('eBadgeFace'), back=$('eBadgeBack'), img=$('eBadgeImage'), panel=$('widgetSettingsPanel'), desk=$('desktop');
  if(!badge||!face||!img||!panel)return;
@@ -12639,8 +12649,7 @@ window.__jingResolveChatEndpoint = function(base) {
  const badgeObserver=new MutationObserver(updateBadgeVisibility);badgeObserver.observe($('desktop'),{subtree:true,attributes:true,attributeFilter:['class']});window.addEventListener('resize',updateBadgeVisibility);setTimeout(updateBadgeVisibility,450);
 })();
 </script>
-
-<script id="jing-desktop-widgets-grid-runtime-v1" data-owner="desktop-widgets">
+<script data-owner="desktop-widgets" id="jing-desktop-widgets-grid-runtime-v1">
 (()=>{
  'use strict';
  const $=id=>document.getElementById(id), desk=$('desktop'); if(!desk)return;
@@ -13835,9 +13844,9 @@ window.__jingResolveChatEndpoint = function(base) {
 <div class="jm-me-list-head"><h2 id="jmMeListTitle">最近播放</h2><button id="jmClearMeList" type="button">清空</button></div><div class="jm-track-list" id="jmMeList"></div><button class="jm-pill-btn jm-import-local" id="jmImportLocal" type="button">导入本地音乐 <span id="jmLocalCountMe">0 首歌曲</span></button></div>
 <div class="jm-me-placeholder" hidden="" id="jmMePlaceholder"></div>
 </section>
-<section aria-label="搜索" class="jm-view" data-jm-view="search"><div class="jm-search-head"><form class="jm-search-form" id="jmSearchForm" role="search"><button aria-label="返回" class="jm-search-back" id="jmSearchBack" type="button"><svg viewbox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></button><input autocomplete="off" class="jm-search" id="jmSearchInput" placeholder="搜索歌曲、歌手"><button aria-label="搜索" class="jm-search-submit" id="jmSearchSubmit" type="submit"><svg viewbox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button></form><button id="jmSearchCancel" type="button">取消</button></div><div class="jm-search-tabs" id="jmSearchTabs"><button class="active" data-jm-search-tab="songs" type="button">单曲</button><button data-jm-search-tab="playlists" type="button">歌单</button><button data-jm-search-tab="artists" type="button">歌手</button></div><p aria-live="polite" class="jm-status-note" id="jmSearchStatus"></p><div class="jm-track-list" id="jmSearchResults"></div></section>
+<section aria-label="搜索" class="jm-view" data-jm-view="search"><div class="jm-search-head"><form class="jm-search-form" id="jmSearchForm" role="search"><button aria-label="返回" class="jm-search-back" id="jmSearchBack" type="button"><svg viewbox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></button><input autocomplete="off" class="jm-search" id="jmSearchInput" placeholder="搜索歌曲、歌手"/><button aria-label="搜索" class="jm-search-submit" id="jmSearchSubmit" type="submit"><svg viewbox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.5 4.5"></path></svg></button></form><button id="jmSearchCancel" type="button">取消</button></div><div class="jm-search-tabs" id="jmSearchTabs"><button class="active" data-jm-search-tab="songs" type="button">单曲</button><button data-jm-search-tab="playlists" type="button">歌单</button><button data-jm-search-tab="artists" type="button">歌手</button></div><p aria-live="polite" class="jm-status-note" id="jmSearchStatus"></p><div class="jm-track-list" id="jmSearchResults"></div></section>
 <section aria-label="歌单详情" class="jm-view" data-jm-view="playlist"><div class="jm-detail-head"><button class="jm-back-link" data-jm-back="discover" type="button"><svg viewbox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg>返回</button><div class="jm-detail-hero"><div class="jm-detail-blur" id="jmDetailBlur"></div><div class="jm-detail-cover" id="jmDetailCover"></div><div class="jm-detail-meta"><span class="jm-eyebrow">精选歌单</span><h1 id="jmDetailTitle">每日推荐</h1><p id="jmDetailCreator">云音乐 · 为你推荐</p><small id="jmDetailPlays">播放量 0</small></div></div><div class="jm-detail-actions"><button class="jm-red-btn" id="jmPlayAll" type="button"><svg viewbox="0 0 24 24"><path d="m8 5 11 7-11 7z"></path></svg>播放全部</button><button id="jmFavoritePlaylist" type="button"><svg viewbox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"></path></svg>收藏</button><button id="jmDownloadPlaylist" type="button"><svg viewbox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 19h16"></path></svg>下载</button><button id="jmCommentPlaylist" type="button"><svg viewbox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"></path></svg>评论</button></div></div><div class="jm-list-subtitle"><strong>歌曲列表</strong><small id="jmDetailTrackCount">0 首歌</small></div><div class="jm-track-list jm-detail-tracks" id="jmDetailTracks"></div></section>
-<section aria-label="正在播放" class="jm-view" data-jm-view="player"><div class="jm-player-head"><button aria-label="返回" class="jm-icon-btn" data-jm-back="discover" type="button"><svg viewbox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></button><div><strong>正在播放</strong><small id="jmPlayerSubhead">歌曲详情</small></div><button aria-label="更多" class="jm-icon-btn" id="jmPlayerMore" type="button"><svg viewbox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></button></div><div class="jm-player-content" id="jmPlayerContent"><div class="jm-vinyl-stage" id="jmVinylStage"><div class="jm-vinyl" id="jmVinyl"><div class="jm-vinyl-cover" id="jmCoverArt"></div><span class="jm-vinyl-hole"></span></div></div><div class="jm-lyrics-full" hidden="" id="jmLyricsFull"></div></div><div class="jm-player-song"><div><h1 id="jmSongTitle">选择一首歌曲</h1><p id="jmSongArtist">歌曲播放后会显示歌手</p></div><button aria-label="喜欢" id="jmLikeBtn" type="button"><svg viewbox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"></path></svg></button></div><div class="jm-player-progress"><span id="jmCurrentTime">00:00</span><input aria-label="播放进度" id="jmSeek" max="1000" min="0" type="range" value="0"><span id="jmDuration">00:00</span></div><div class="jm-player-controls"><button aria-label="列表循环" id="jmMode" type="button"><svg viewbox="0 0 24 24"><path d="M17 2l4 4-4 4M3 6h18M7 22l-4-4 4-4m14 4H3"></path></svg></button><button aria-label="上一首" id="jmPrev" type="button"><svg viewbox="0 0 24 24"><path d="M5 5v14M19 5 8 12l11 7z"></path></svg></button><button aria-label="播放" class="jm-main-play" id="jmPlay" type="button"><svg viewbox="0 0 24 24"><path d="m8 5 11 7-11 7z"></path></svg></button><button aria-label="下一首" id="jmNext" type="button"><svg viewbox="0 0 24 24"><path d="M19 5v14M5 5l11 7-11 7z"></path></svg></button><button aria-label="播放列表" id="jmQueueBtn" type="button"><svg viewbox="0 0 24 24"><path d="M4 6h13M4 12h13M4 18h8M20 15v6m-3-3h6"></path></svg></button></div><div class="jm-player-bottom-actions"><button id="jmPlayerComment" type="button"><svg viewbox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"></path></svg>评论</button><button id="jmPlayerShare" type="button"><svg viewbox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.7 10.6 6.6-4.2m-6.6 7.2 6.6 4.2"></path></svg>分享</button><button id="jmPlayerMoreBottom" type="button"><svg viewbox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg>更多</button></div></section>
+<section aria-label="正在播放" class="jm-view" data-jm-view="player"><div class="jm-player-head"><button aria-label="返回" class="jm-icon-btn" data-jm-back="discover" type="button"><svg viewbox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></button><div><strong>正在播放</strong><small id="jmPlayerSubhead">歌曲详情</small></div><button aria-label="更多" class="jm-icon-btn" id="jmPlayerMore" type="button"><svg viewbox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></button></div><div class="jm-player-content" id="jmPlayerContent"><div class="jm-vinyl-stage" id="jmVinylStage"><div class="jm-vinyl" id="jmVinyl"><div class="jm-vinyl-cover" id="jmCoverArt"></div><span class="jm-vinyl-hole"></span></div></div><div class="jm-lyrics-full" hidden="" id="jmLyricsFull"></div></div><div class="jm-player-song"><div><h1 id="jmSongTitle">选择一首歌曲</h1><p id="jmSongArtist">歌曲播放后会显示歌手</p></div><button aria-label="喜欢" id="jmLikeBtn" type="button"><svg viewbox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"></path></svg></button></div><div class="jm-player-progress"><span id="jmCurrentTime">00:00</span><input aria-label="播放进度" id="jmSeek" max="1000" min="0" type="range" value="0"/><span id="jmDuration">00:00</span></div><div class="jm-player-controls"><button aria-label="列表循环" id="jmMode" type="button"><svg viewbox="0 0 24 24"><path d="M17 2l4 4-4 4M3 6h18M7 22l-4-4 4-4m14 4H3"></path></svg></button><button aria-label="上一首" id="jmPrev" type="button"><svg viewbox="0 0 24 24"><path d="M5 5v14M19 5 8 12l11 7z"></path></svg></button><button aria-label="播放" class="jm-main-play" id="jmPlay" type="button"><svg viewbox="0 0 24 24"><path d="m8 5 11 7-11 7z"></path></svg></button><button aria-label="下一首" id="jmNext" type="button"><svg viewbox="0 0 24 24"><path d="M19 5v14M5 5l11 7-11 7z"></path></svg></button><button aria-label="播放列表" id="jmQueueBtn" type="button"><svg viewbox="0 0 24 24"><path d="M4 6h13M4 12h13M4 18h8M20 15v6m-3-3h6"></path></svg></button></div><div class="jm-player-bottom-actions"><button id="jmPlayerComment" type="button"><svg viewbox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-2 2v-9.5A7.5 7.5 0 0 1 10.5 4H12a8 8 0 0 1 8 7.5Z"></path></svg>评论</button><button id="jmPlayerShare" type="button"><svg viewbox="0 0 24 24"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.7 10.6 6.6-4.2m-6.6 7.2 6.6 4.2"></path></svg>分享</button><button id="jmPlayerMoreBottom" type="button"><svg viewbox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg>更多</button></div></section>
 <div class="jm-dress-backdrop" hidden="" id="jmDressBackdrop"></div>
 <section aria-label="装扮设置" aria-modal="true" class="jm-dress-sheet" hidden="" id="jmDressSheet">
 <div class="jm-dress-handle"></div><header><strong>个性装扮</strong><button aria-label="关闭" id="jmDressClose" type="button">×</button></header>
@@ -13845,17 +13854,17 @@ window.__jingResolveChatEndpoint = function(base) {
 <button class="jm-dress-option" data-dress-kind="profile" type="button"><span class="jm-dress-option-icon">▧</span><span><strong>更换主页全屏背景</strong><small>上传主页背景图，数据与快捷入口保持半透明</small></span><b>›</b></button>
 <button class="jm-dress-option" data-dress-kind="avatar" type="button"><span class="jm-dress-option-icon">◉</span><span><strong>更换头像</strong><small>仅影响音乐模块显示头像</small></span><b>›</b></button>
 <button class="jm-dress-option" data-dress-kind="player" type="button"><span class="jm-dress-option-icon">♫</span><span><strong>更换播放页背景</strong><small>只应用于黑胶与歌词区域</small></span><b>›</b></button>
-<div class="jm-frost-control"><div class="jm-frost-heading"><label for="jmFrostSlider">音乐背景磨砂度</label><strong id="jmFrostValue">中等 · 12px</strong></div><input id="jmFrostSlider" max="100" min="0" step="1" type="range" value="60"><div class="jm-frost-scale"><span>清透</span><span>柔和</span><span>强磨砂</span></div><small>仅调节音乐模块快捷按钮与个人页大背景磨砂，不影响桌面图标，自动保存。</small></div>
-<label class="jm-dress-url-label" for="jmDressUrl">或粘贴图片链接</label><div class="jm-dress-url-row"><input id="jmDressUrl" placeholder="https://… 图片地址" type="url"><button id="jmDressUrlApply" type="button">应用</button></div>
-<input accept="image/*" hidden="" id="jmDressFile" type="file">
+<div class="jm-frost-control"><div class="jm-frost-heading"><label for="jmFrostSlider">音乐背景磨砂度</label><strong id="jmFrostValue">中等 · 12px</strong></div><input id="jmFrostSlider" max="100" min="0" step="1" type="range" value="60"/><div class="jm-frost-scale"><span>清透</span><span>柔和</span><span>强磨砂</span></div><small>仅调节音乐模块快捷按钮与个人页大背景磨砂，不影响桌面图标，自动保存。</small></div>
+<label class="jm-dress-url-label" for="jmDressUrl">或粘贴图片链接</label><div class="jm-dress-url-row"><input id="jmDressUrl" placeholder="https://… 图片地址" type="url"/><button id="jmDressUrlApply" type="button">应用</button></div>
+<input accept="image/*" hidden="" id="jmDressFile" type="file"/>
 </section>
 </main>
 <div class="jm-mini-player" hidden="" id="jmMiniPlayer"><button class="jm-mini-main" id="jmMiniOpen" type="button"><span class="jm-mini-cover" id="jmMiniCover"></span><span class="jm-mini-meta"><strong id="jmMiniTitle">还没有播放歌曲</strong><small id="jmMiniArtist">点击开始听歌</small></span></button><button aria-label="播放" id="jmMiniPlay" type="button"><svg viewbox="0 0 24 24"><path d="m8 5 11 7-11 7z"></path></svg></button><button aria-label="下一首" id="jmMiniNext" type="button"><svg viewbox="0 0 24 24"><path d="M19 5v14M5 5l11 7-11 7z"></path></svg></button></div>
 <nav aria-label="音乐导航" class="jm-tabs"><button class="jm-tab active" data-jm-tab="discover" type="button"><svg viewbox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"></path></svg><span>发现</span></button><button class="jm-tab" data-jm-tab="podcast" type="button"><svg viewbox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3ZM5 10v1a7 7 0 0 0 14 0v-1M12 18v3"></path></svg><span>播客</span></button><button class="jm-tab" data-jm-tab="cloud" type="button"><svg viewbox="0 0 24 24"><path d="M4 5h16v12H8l-4 3zM8 9h8M8 13h5"></path></svg><span>云村</span></button><button class="jm-tab" data-jm-tab="me" type="button"><svg viewbox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg><span>我的</span></button></nav>
 <div class="jm-queue-panel" hidden="" id="jmQueuePanel"><div class="jm-queue-head"><strong id="jmQueueTitle">播放列表</strong><button aria-label="关闭" id="jmQueueClose" type="button">×</button></div><div id="jmQueueItems"></div></div>
-<input accept="audio/*,.lrc,.txt" hidden="" id="jmFileInput" multiple="" type="file"><audio id="jmAudio" preload="metadata"></audio>
+<input accept="audio/*,.lrc,.txt" hidden="" id="jmFileInput" multiple="" type="file"/><audio id="jmAudio" preload="metadata"></audio>
 </section>
-<script id="jing-beautify-theme-runtime-v1" data-owner="beautify">
+<script data-owner="beautify" id="jing-beautify-theme-runtime-v1">
 (()=>{
  const root=document.documentElement;
  const themeList=[
@@ -13883,7 +13892,6 @@ window.__jingResolveChatEndpoint = function(base) {
  });
 })();
 </script>
-
 <script id="jing-music-v2-script">
 (()=>{
 'use strict';
@@ -14438,7 +14446,6 @@ screen.dataset.musicV2Ready='1';
  applyGlass();
 })();
 </script>
-
 <script>
 // === 页面完全初始化后，移除 booting 类，平滑淡入，避免位置跳变 ===
 (function() {
@@ -14460,7 +14467,6 @@ screen.dataset.musicV2Ready='1';
   }
 })();
 </script>
-
 <script id="emboss-effect-toggle-script">
 (()=>{
  const root=document.documentElement;
@@ -14482,11 +14488,8 @@ screen.dataset.musicV2Ready='1';
  render();
 })();
 </script>
-
 <div aria-label="选中文本操作" id="reading-ai-selection-menu" role="toolbar"><button data-rai="thought">想法</button><button data-rai="highlight">划线</button><button data-rai="marker">高光</button><button data-rai="share">分享</button><button data-rai="listen">朗读</button></div>
 <div id="reading-ai-modal-root"></div>
-
-
 <script id="system-extra-panels-script">(()=>{'use strict';
 const $=id=>document.getElementById(id);
 const main=$('settingsMain'),manager=$('systemManagementPanel');
@@ -14753,7 +14756,6 @@ function init(){const settings=$('settingsMain');const maskPanel=$('maskSettings
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();window.__jingGetActiveMaskContext=()=>{const m=masks.getActive();if(!m)return null;const archive=safeJSON(localStorage.getItem(ARCHIVE_KEY),{}),worlds=Array.isArray(archive.worlds)?archive.worlds:[];return {...m,profile:{...m.profile,worldBooks:worlds.filter(w=>(m.profile.worldBookIds||[]).map(String).includes(String(w.id)))}}};
 })();
 </script>
-
 <script id="jm-me-stats-and-glass-controller">
 (()=>{'use strict';
 const screen=document.getElementById('jingMusicScreen');if(!screen)return;
@@ -14770,7 +14772,6 @@ if(slider){let value=60;try{const n=Number(localStorage.getItem('jm-music-frost-
 renderStats();
 })();
 </script>
-
 <script id="conversation-app-script">
 (()=>{
  const $=id=>document.getElementById(id), SCREEN=$('conversation-screen'), STORAGE='jing-conversation-threads-v1', STARTED_KEY='jing-conversation-started-v1', ARCHIVE_KEY='jing-archive-studio-v1', PINNED_KEY='jing-conversation-pinned-v1', UNREAD_KEY='jing-conversation-unread-v1';
@@ -16238,11 +16239,78 @@ function ensure(){if($('jingOfflineScreens'))return;const css=document.createEle
 #jingOfflineScreens .os-send{flex:0 0 46px!important;width:46px!important;min-width:46px!important;height:44px!important;border-radius:8px!important;font-size:21px!important}
 @media(max-width:480px){#jingOfflineScreens .os-page[data-page=chat] .os-list{padding:16px 12px 20px!important;gap:16px!important}#jingOfflineScreens .os-card{width:calc(100% - 8px)!important;max-width:590px!important;padding:16px 17px 18px!important;font-size:14px!important;line-height:1.85!important}#jingOfflineScreens .os-card-body{font-size:14px!important;line-height:1.85!important}#jingOfflineScreens .os-card-body .os-paragraph{margin-bottom:19px!important}#jingOfflineScreens .os-compose{padding-left:12px!important;padding-right:12px!important}}
 
+/* Offline role picker refinement: layout-only changes; all colors continue to come from the active theme. */
+#jingOfflineScreens .os-roles-intro{padding:34px 22px 22px!important}
+#jingOfflineScreens .os-kicker{display:flex!important;align-items:center!important;gap:12px!important;font-size:9px!important;letter-spacing:.18em!important;margin-bottom:15px!important;color:var(--os-accent)!important}
+#jingOfflineScreens .os-kicker::after{content:"";display:block;width:54px;height:1px;background:var(--os-line)}
+#jingOfflineScreens .os-hero-title{font-size:27px!important;line-height:1.34!important;letter-spacing:-.025em!important;font-weight:700!important}
+#jingOfflineScreens .os-hero-sub{font-size:13px!important;line-height:1.75!important;margin-top:9px!important;color:var(--os-muted)!important}
+#jingOfflineScreens .os-roles{gap:13px!important;padding:8px 20px 28px!important}
+#jingOfflineScreens .os-role-count{padding:0 2px 3px!important;color:var(--os-muted)!important;font-size:11px!important;letter-spacing:.04em!important}
+#jingOfflineScreens .os-role{display:flex!important;position:relative!important;align-items:center!important;gap:16px!important;width:100%!important;min-height:124px!important;padding:11px 48px 11px 11px!important;border:1px solid var(--os-line)!important;border-radius:18px!important;background:var(--os-panel)!important;color:var(--os-text)!important;text-align:left!important;overflow:hidden!important;transition:border-color .18s ease,background .18s ease!important}
+#jingOfflineScreens .os-role .portrait{position:relative!important;inset:auto!important;z-index:0!important;display:block!important;flex:0 0 98px!important;width:98px!important;height:100px!important;aspect-ratio:auto!important;border:0!important;border-radius:12px!important;background:var(--os-panel-2)!important;overflow:hidden!important}
+#jingOfflineScreens .os-role img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;object-fit:cover!important;object-position:center 30%!important;border-radius:0!important}
+#jingOfflineScreens .os-role .fallback{display:grid!important;width:100%!important;height:100%!important;place-items:center!important;background:var(--os-panel-2)!important;color:var(--os-accent)!important;font-size:34px!important;border-radius:0!important}
+#jingOfflineScreens .os-role-copy{display:flex!important;flex:1 1 auto!important;min-width:0!important;flex-direction:column!important;align-items:flex-start!important;gap:8px!important}
+#jingOfflineScreens .os-role strong{display:block!important;flex:none!important;min-width:0!important;padding:0!important;margin:0!important;color:var(--os-text)!important;font-size:18px!important;font-weight:650!important;letter-spacing:.04em!important;line-height:1.35!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#jingOfflineScreens .os-role-hint{color:var(--os-muted)!important;font-size:12px!important;line-height:1.5!important}
+#jingOfflineScreens .os-role-tag{display:inline-flex!important;align-items:center!important;min-height:22px!important;padding:3px 8px!important;border:1px solid var(--os-line)!important;border-radius:999px!important;color:var(--os-accent)!important;font-size:9px!important;letter-spacing:.12em!important;line-height:1!important}
+#jingOfflineScreens .os-role::after{content:'›'!important;display:grid!important;place-items:center!important;position:absolute!important;right:15px!important;top:50%!important;transform:translateY(-50%)!important;width:27px!important;height:27px!important;border:1px solid var(--os-line)!important;border-radius:50%!important;color:var(--os-muted)!important;font-size:22px!important;font-weight:300!important;line-height:1!important}
+#jingOfflineScreens .os-role:active{border-color:var(--os-accent)!important;background:var(--os-panel-2)!important}
+#jingOfflineScreens .os-role:focus-visible{outline:2px solid var(--os-accent)!important;outline-offset:3px!important}
+#jingOfflineScreens .os-empty{margin:8px 0!important}
+@media(max-width:380px){#jingOfflineScreens .os-roles-intro{padding:27px 18px 18px!important}#jingOfflineScreens .os-hero-title{font-size:24px!important}#jingOfflineScreens .os-roles{padding-left:14px!important;padding-right:14px!important;gap:11px!important}#jingOfflineScreens .os-role{gap:12px!important;min-height:108px!important;padding:8px 40px 8px 8px!important}#jingOfflineScreens .os-role .portrait{flex-basis:82px!important;width:82px!important;height:88px!important}#jingOfflineScreens .os-role strong{font-size:16px!important}#jingOfflineScreens .os-role-hint{font-size:11px!important}}
+
+
+/* Offline role picker polish: one consistent, responsive card system. */
+#jingOfflineScreens .os-page[data-page="roles"]{background:var(--theme-bg,var(--os-bg))!important}
+#jingOfflineScreens .os-page[data-page="roles"] .os-head{flex:0 0 60px!important;height:60px!important;min-height:60px!important}
+#jingOfflineScreens .os-roles-intro{padding:clamp(24px,5vh,42px) clamp(18px,5vw,30px) 18px!important;max-width:820px!important;width:100%!important;margin:0 auto!important}
+#jingOfflineScreens .os-kicker{display:flex!important;align-items:center!important;gap:10px!important;font-size:10px!important;letter-spacing:.16em!important;line-height:1.4!important;color:var(--theme-accent-deep,var(--os-accent))!important;margin:0 0 13px!important}
+#jingOfflineScreens .os-kicker::after{content:""!important;display:block!important;width:34px!important;height:1px!important;background:var(--theme-accent,var(--os-accent))!important;opacity:.65!important}
+#jingOfflineScreens .os-hero-title{font-size:clamp(23px,5vw,29px)!important;line-height:1.35!important;letter-spacing:-.025em!important;font-weight:700!important;margin:0!important;color:var(--theme-text,var(--os-text))!important}
+#jingOfflineScreens .os-hero-sub{max-width:none!important;margin:8px 0 0!important;font-size:13px!important;line-height:1.75!important;color:var(--theme-text-muted,var(--os-muted))!important}
+#jingOfflineScreens .os-roles{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important;width:100%!important;max-width:820px!important;margin:0 auto!important;padding:12px clamp(14px,4vw,26px) calc(28px + env(safe-area-inset-bottom,0px))!important;overflow:auto!important}
+#jingOfflineScreens .os-role-count{order:0!important;padding:0 3px 2px!important;margin:0 0 2px!important;font-size:12px!important;line-height:1.6!important;letter-spacing:.02em!important;color:var(--theme-text-muted,var(--os-muted))!important}
+#jingOfflineScreens .os-role{order:1!important;position:relative!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:16px!important;width:100%!important;min-width:0!important;min-height:116px!important;height:auto!important;flex:none!important;padding:10px 52px 10px 10px!important;border:1px solid var(--theme-border,var(--os-line))!important;border-radius:18px!important;background:var(--theme-card,var(--os-panel))!important;color:var(--theme-text,var(--os-text))!important;text-align:left!important;overflow:hidden!important;box-shadow:0 5px 18px rgba(0,0,0,.055)!important;transition:border-color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease!important}
+#jingOfflineScreens .os-role .portrait{position:relative!important;inset:auto!important;z-index:0!important;display:block!important;flex:0 0 94px!important;width:94px!important;height:96px!important;min-width:94px!important;aspect-ratio:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:13px!important;background:var(--theme-card-soft,var(--os-panel-2))!important;overflow:hidden!important;box-shadow:none!important}
+#jingOfflineScreens .os-role img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;object-fit:cover!important;object-position:center 28%!important;border:0!important;border-radius:0!important;filter:none!important;opacity:1!important}
+#jingOfflineScreens .os-role .fallback{display:grid!important;width:100%!important;height:100%!important;place-items:center!important;border-radius:0!important;background:var(--theme-card-soft,var(--os-panel-2))!important;color:var(--theme-accent-deep,var(--os-accent))!important;font-size:34px!important;font-weight:650!important}
+#jingOfflineScreens .os-role-copy{display:flex!important;flex:1 1 auto!important;min-width:0!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:7px!important}
+#jingOfflineScreens .os-role strong{display:block!important;max-width:100%!important;margin:0!important;padding:0!important;color:var(--theme-text,var(--os-text))!important;font-size:17px!important;font-weight:680!important;line-height:1.4!important;letter-spacing:.015em!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#jingOfflineScreens .os-role-tag{display:inline-flex!important;align-items:center!important;min-height:20px!important;padding:3px 8px!important;border:1px solid color-mix(in srgb,var(--theme-accent,var(--os-accent)) 28%,var(--theme-border,var(--os-line)))!important;border-radius:999px!important;background:color-mix(in srgb,var(--theme-accent,var(--os-accent)) 7%,transparent)!important;color:var(--theme-accent-deep,var(--os-accent))!important;font-size:9px!important;font-weight:650!important;letter-spacing:.11em!important;line-height:1.2!important}
+#jingOfflineScreens .os-role-hint{font-size:12px!important;line-height:1.55!important;color:var(--theme-text-muted,var(--os-muted))!important}
+#jingOfflineScreens .os-role::after{content:"›"!important;position:absolute!important;right:15px!important;top:50%!important;transform:translateY(-50%)!important;display:grid!important;place-items:center!important;width:28px!important;height:28px!important;border:1px solid var(--theme-border,var(--os-line))!important;border-radius:50%!important;background:var(--theme-card-soft,var(--os-panel-2))!important;color:var(--theme-accent-deep,var(--os-accent))!important;font-size:22px!important;font-weight:400!important;line-height:1!important}
+#jingOfflineScreens .os-role:hover{border-color:color-mix(in srgb,var(--theme-accent,var(--os-accent)) 48%,var(--theme-border,var(--os-line)))!important;box-shadow:0 8px 24px rgba(0,0,0,.085)!important}
+#jingOfflineScreens .os-role:active{transform:scale(.99)!important;border-color:var(--theme-accent,var(--os-accent))!important;background:color-mix(in srgb,var(--theme-accent,var(--os-accent)) 6%,var(--theme-card,var(--os-panel)))!important}
+#jingOfflineScreens .os-role:focus-visible{outline:2px solid var(--theme-accent,var(--os-accent))!important;outline-offset:3px!important}
+#jingOfflineScreens .os-empty{width:100%!important;margin:8px 0!important;padding:28px 18px!important;border:1px dashed var(--theme-border,var(--os-line))!important;border-radius:18px!important;background:var(--theme-card,var(--os-panel))!important;color:var(--theme-text-muted,var(--os-muted))!important;text-align:center!important}
+@media(max-width:420px){#jingOfflineScreens .os-roles-intro{padding:23px 18px 14px!important}#jingOfflineScreens .os-roles{gap:10px!important;padding-left:14px!important;padding-right:14px!important}#jingOfflineScreens .os-role{gap:12px!important;min-height:102px!important;padding:8px 42px 8px 8px!important;border-radius:15px!important}#jingOfflineScreens .os-role .portrait{flex-basis:80px!important;width:80px!important;min-width:80px!important;height:84px!important;border-radius:11px!important}#jingOfflineScreens .os-role strong{font-size:16px!important}#jingOfflineScreens .os-role-hint{font-size:11px!important}#jingOfflineScreens .os-role::after{right:10px!important;width:25px!important;height:25px!important}}
+@media(min-width:700px){#jingOfflineScreens .os-roles{padding-left:24px!important;padding-right:24px!important}#jingOfflineScreens .os-role{min-height:126px!important;padding:12px 54px 12px 12px!important}#jingOfflineScreens .os-role .portrait{flex-basis:104px!important;width:104px!important;min-width:104px!important;height:102px!important}}
+
 `;
  document.head.append(css);const root=document.createElement('div');root.id='jingOfflineScreens';root.innerHTML=`<section class="os-page" data-page="roles"><header class="os-head"><button data-return-conversation aria-label="返回对话">‹</button><strong>选择角色</strong><span style="width:36px"></span></header><div class="os-roles-intro"><div class="os-kicker">PRIVATE SCENE · OFFLINE MODE</div><h1 class="os-hero-title">请选择你希望见到的他</h1><p class="os-hero-sub">选择一位角色，进入专属线下剧情。</p></div><div class="os-list os-roles" id="osRoleGrid"></div></section><section class="os-page" data-page="chat"><header class="os-head"><button data-return-conversation aria-label="返回对话">‹</button><strong id="osChatTitle">线下剧情</strong><span class="os-head-spacer" aria-hidden="true"></span></header><div class="os-list" id="osChatList"></div><div class="os-compose"><button class="os-call-ai" id="osCallAI" type="button" aria-label="让角色回复" title="让角色回复"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5l3.5 2"></path></svg></button><textarea id="osInput" rows="1" placeholder="输入剧情推进…"></textarea><button class="os-send" id="osSend" type="button" aria-label="发送">➤</button></div></section>`;document.body.append(root);
 }
 function show(page){ensure();$('jingOfflineScreens').classList.add('open');document.querySelectorAll('#jingOfflineScreens .os-page').forEach(p=>p.classList.toggle('active',p.dataset.page===page));if(page==='roles')renderRoles();if(page==='chat')renderChat()}
-function renderRoles(){const grid=$('osRoleGrid');grid.replaceChildren();const roles=getRoles();if(!roles.length){grid.innerHTML='<div class="os-empty" style="grid-column:1/-1">暂时没有可选择的角色卡。请先在资料库中创建角色。</div>';return}roles.forEach(r=>{const b=document.createElement('button');b.className='os-role';b.type='button';const portrait=document.createElement('span');portrait.className='portrait';if(r.avatar){const img=document.createElement('img');img.src=r.avatar;img.alt='';img.onerror=()=>{portrait.innerHTML='<span class="fallback">'+esc(r.name.slice(0,1))+'</span>'};portrait.append(img)}else portrait.innerHTML='<span class="fallback">'+esc(r.name.slice(0,1))+'</span>';const name=document.createElement('strong');name.textContent=r.name;b.append(portrait,name);b.onclick=()=>{selected=r;try{localStorage.setItem('jing-offline-selected-role',r.id)}catch(_){}show('chat')};grid.append(b)})}
+function renderRoles(){
+ const grid=$('osRoleGrid');grid.replaceChildren();
+ const roles=getRoles();
+ if(!roles.length){grid.innerHTML='<div class="os-empty" style="grid-column:1/-1">暂时没有可选择的角色卡。请先在资料库中创建角色。</div>';return}
+ const count=document.createElement('div');count.className='os-role-count';count.textContent='共 '+roles.length+' 位角色 · 选择后进入专属剧情';grid.append(count);
+ roles.forEach(r=>{
+  const b=document.createElement('button');b.className='os-role';b.type='button';b.setAttribute('aria-label','选择角色：'+String(r.name||'未命名角色'));
+  const portrait=document.createElement('span');portrait.className='portrait';
+  if(r.avatar){const img=document.createElement('img');img.src=r.avatar;img.alt='';img.onerror=()=>{portrait.innerHTML='<span class="fallback">'+esc(String(r.name||'角').slice(0,1))+'</span>'};portrait.append(img)}
+  else portrait.innerHTML='<span class="fallback">'+esc(String(r.name||'角').slice(0,1))+'</span>';
+  const copy=document.createElement('span');copy.className='os-role-copy';
+  const name=document.createElement('strong');name.textContent=r.name||'未命名角色';
+  const tag=document.createElement('span');tag.className='os-role-tag';tag.textContent='OFFLINE SCENE';
+  const hint=document.createElement('span');hint.className='os-role-hint';hint.textContent='进入专属线下剧情';
+  copy.append(name,tag,hint);b.append(portrait,copy);
+  b.onclick=()=>{selected=r;try{localStorage.setItem('jing-offline-selected-role',r.id)}catch(_){}show('chat')};
+  grid.append(b);
+ });
+}
 function renderOfflineBody(body,content){
  const raw=String(content||'').replace(/\r/g,'').trim();
  const blocks=raw.split(/\n\s*\n+/).map(x=>x.trim()).filter(Boolean);
@@ -16287,7 +16355,7 @@ function renderChat(){
   card.addEventListener('pointerdown',event=>{
    if(event.target.closest('button,textarea,input,a'))return;
    clearPress();pressTriggered=false;pressStartX=event.clientX;pressStartY=event.clientY;
-   pressTimer=setTimeout(()=>{revealActions();pressTimer=null},480);
+   pressTimer=setTimeout(()=>{revealActions();pressTimer=null},220);
   });
   card.addEventListener('pointermove',event=>{
    if(!pressTimer)return;
@@ -16415,14 +16483,6 @@ document.addEventListener('keydown',e=>{if(e.target?.id!=='osInput'||e.key!=='En
 window.__jingOpenOfflineStory=open;
 })();
 </script>
-
-
-
-
-
-
-
-
 <script id="jing-time-awareness-feature">
 (()=>{
  const KEY_ONLINE='jing-time-awareness-online-v1';
@@ -16497,10 +16557,6 @@ window.__jingOpenOfflineStory=open;
  window.__jingTimeAwarenessEnabled=enabled;
 })();
 </script>
-
-
-
-
 <script id="jing-memory-v2-engine">
 (()=>{
  'use strict';
@@ -18880,15 +18936,6 @@ ${JSON.stringify(roleHistory,null,2)}
 })();
 })();
 </script>
-
-
-
-
-
-
-
-
-
 <script id="api-floating-switch-script-v1">
 (()=>{
  'use strict';
@@ -18937,29 +18984,7 @@ ${JSON.stringify(roleHistory,null,2)}
  // On first use, keep the current API usable; presets remain explicitly user-created.
 })();
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script id="jing-desktop-widgets-experience-v4" data-owner="desktop-widgets">
+<script data-owner="desktop-widgets" id="jing-desktop-widgets-experience-v4">
 (()=>{
   'use strict';
   const $ = id => document.getElementById(id);
@@ -19313,9 +19338,7 @@ ${JSON.stringify(roleHistory,null,2)}
 })();
 })();
 </script>
-
-
-<script id="jing-desktop-widgets-clock-style-v1" data-owner="desktop-widgets">
+<script data-owner="desktop-widgets" id="jing-desktop-widgets-clock-style-v1">
 (()=>{
   'use strict'; const $=id=>document.getElementById(id), clock=$('homeClockWidget'); if(!clock)return;
   const styleKey='jing-clock-widget-style-v2', zoneKey='jing-clock-secondary-zone-v1', signatureKey='jing-clock-signature-v1';
@@ -19344,86 +19367,28 @@ ${JSON.stringify(roleHistory,null,2)}
   updateExtras();setInterval(updateExtras,15000);
 })();
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- 心声弹窗 -->
-<div id="heart-overlay" class="heart-overlay">
-  <div class="heart-card">
-    <div class="heart-card-head">
-      <span class="heart-card-tag">心声</span>
-      <span class="heart-card-dots"><i></i><i></i><i></i></span>
-    </div>
-    <div class="heart-card-body" id="heart-text"></div>
-    <div class="heart-card-foot">
-      <div class="heart-card-foot-line"></div>
-      <div class="heart-card-foot-right">
-        <span class="heart-card-sign" id="heart-sign"></span>
-        <svg class="heart-card-icon" viewBox="0 0 24 24">
-          <path d="M12 20.5s-7-4.35-8.9-8.5A4.9 4.9 0 0 1 12 6.6a4.9 4.9 0 0 1 8.9 5.4C19 16.15 12 20.5 12 20.5z"/>
-        </svg>
-      </div>
-    </div>
-  </div>
+<div class="heart-overlay" id="heart-overlay">
+<div class="heart-card">
+<div class="heart-card-head">
+<span class="heart-card-tag">心声</span>
+<span class="heart-card-dots"><i></i><i></i><i></i></span>
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<div class="heart-card-body" id="heart-text"></div>
+<div class="heart-card-foot">
+<div class="heart-card-foot-line"></div>
+<div class="heart-card-foot-right">
+<span class="heart-card-sign" id="heart-sign"></span>
+<svg class="heart-card-icon" viewbox="0 0 24 24">
+<path d="M12 20.5s-7-4.35-8.9-8.5A4.9 4.9 0 0 1 12 6.6a4.9 4.9 0 0 1 8.9 5.4C19 16.15 12 20.5 12 20.5z"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
 <!-- 软件边界：阅读、音乐、美化、设置、对话、桌面组件各自独立；各自管理自己的页面、样式、事件与存储。 -->
 <!-- 桌面组件边界：桌面编辑器、组件库、预览、详情、组件设置、时钟和电子吧唧全部归 JingDesktopWidgets；不归设置或美化。 -->
 <!-- 共享服务边界：JingMemory、JingArchive、JingMasks 各自持有唯一数据；软件通过公共接口访问，不复制数据。 -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <script id="jing-startup-splash-runtime-v1">
 (()=>{
   'use strict';
@@ -19450,20 +19415,13 @@ ${JSON.stringify(roleHistory,null,2)}
   const stageTimer=setInterval(()=>{if(finished)return;stageIndex=(stageIndex+1)%stages.length;if(status)status.textContent=stages[stageIndex];},950);
   const frame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   async function warmLocalResources(){
-    // 同步读取本地键值，确保本地存储接口可用；不写入、不覆盖任何用户数据。
-    try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key!==null)localStorage.getItem(key);}}catch(_){}
-    // 等待字体就绪，避免主界面出现字体二次跳变。
-    try{if(document.fonts&&document.fonts.ready)await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1800))]);}catch(_){}
-    // 解码页面中已声明的图片资源；单张失败不阻塞启动。
-    const imgs=Array.from(document.images).filter(img=>img.currentSrc||img.src);
-    await Promise.all(imgs.map(img=>{try{if(typeof img.decode==='function')return Promise.race([img.decode().catch(()=>{}),new Promise(r=>setTimeout(r,1200))]);}catch(_){}return Promise.resolve();}));
-    // 启动阶段不主动探测 IndexedDB：部分隔离来源（如 about:blank/file 预览）会让 databases() 产生未处理拒绝。
-    // 数据库初始化由各自模块按需完成；启动页不依赖 IndexedDB，也不触碰用户数据。
+    // 只做轻量本地存储可用性检查；字体、图片和数据库均不阻塞首屏。
+    try{localStorage.getItem('jing-wallpaper');}catch(_){}
   }
-  function finish(){if(finished)return;finished=true;clearInterval(stageTimer);if(status)status.textContent='准备完成';const remaining=Math.max(0,680-(Date.now()-startedAt));setTimeout(()=>{splash.classList.add('jss-leaving');setTimeout(()=>{try{splash.remove();}catch(_){splash.style.display='none';}},480);},remaining);}
+  function finish(){if(finished)return;finished=true;clearInterval(stageTimer);if(status)status.textContent='准备完成';const remaining=Math.max(0,180-(Date.now()-startedAt));setTimeout(()=>{splash.classList.add('jss-leaving');setTimeout(()=>{try{splash.remove();}catch(_){splash.style.display='none';}},220);},remaining);}
   async function start(){
     try{
-      if(document.readyState!=='complete')await new Promise(resolve=>window.addEventListener('load',resolve,{once:true}));
+      if(document.readyState==='loading')await new Promise(resolve=>document.addEventListener('DOMContentLoaded',resolve,{once:true}));
       await warmLocalResources();
       await frame();
       // 留出一小段安静窗口，让 DOMContentLoaded 阶段的同步初始化完成。
@@ -19476,23 +19434,12 @@ ${JSON.stringify(roleHistory,null,2)}
   start().finally(()=>clearTimeout(watchdog));
 })();
 </script>
-
-
-
-
-
-
-
-
-
 <script id="jing-personal-profile-sync-final">
 (()=>{'use strict';
  const sync=()=>{try{const root=document.getElementById('reading-screen');if(!root)return;const name=root.querySelector('#reader-mask-name'),desc=root.querySelector('#reader-mask-desc'),avatar=root.querySelector('#reader-mask-avatar'),meAvatar=root.querySelector('#reader-me-avatar'),meName=root.querySelector('#reader-me-name'),meSubtitle=root.querySelector('#reader-me-subtitle');const active=window.__jingMasks?.getActive?.()||null,p=active?.profile||{},label=String(p.nickname||active?.name||'个人').trim()||'个人',src=String(p.avatar||p.avatarUrl||p.photo||'').trim();const paint=node=>{if(!node)return;node.replaceChildren();if(src){const img=document.createElement('img');img.src=src;img.alt='个人头像';img.onerror=()=>{node.replaceChildren();node.textContent=label.slice(0,1)};node.append(img)}else node.textContent=label.slice(0,1)};paint(avatar);paint(meAvatar);if(name)name.textContent=label;if(meName)meName.textContent=label;if(desc)desc.textContent=[p.roleName,p.signature].filter(Boolean).join(' · ')||'个人资料与头像';if(meSubtitle)meSubtitle.textContent=String(p.signature||p.roleName||'我的阅读与创作空间');}catch(e){console.warn('[Personal profile] sync failed',e)}};
  window.addEventListener('jing:masks-updated',sync);window.addEventListener('jing:mask-changed',sync);window.addEventListener('jing-theme-change',()=>{});document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});else sync();
 })();
 </script>
-
-
 <script id="jing-native-dialog-bridge-v2">
 (()=>{
  'use strict';
@@ -19506,7 +19453,6 @@ ${JSON.stringify(roleHistory,null,2)}
  window.prompt=(message,defaultValue='')=>{if(typeof window.showCustomPrompt==='function')return window.showCustomPrompt('请输入',String(message??''),String(defaultValue??''));showToast(message);return null;};
 })();
 </script>
-
 <script id="reader-unified-runtime">
 /* ===== reader-soft-gray-script ===== */
 
@@ -21042,15 +20988,25 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 
 </script>
+<style id="jing-offline-role-picker-single-style">
+#jingOfflineScreens .os-roles-intro{padding:30px 22px 14px!important;max-width:820px!important;width:100%!important;margin:0 auto!important}
+#jingOfflineScreens .os-roles{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important;width:100%!important;max-width:820px!important;margin:0 auto!important;padding:12px clamp(14px,4vw,26px) calc(28px + env(safe-area-inset-bottom,0px))!important;overflow:auto!important}
+#jingOfflineScreens .os-role-count{order:0!important;padding:0 3px 2px!important;margin:0 0 2px!important;font-size:12px!important;line-height:1.6!important;color:var(--theme-text-muted,var(--os-muted))!important}
+#jingOfflineScreens .os-role{order:1!important;position:relative!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:16px!important;width:100%!important;min-width:0!important;min-height:116px!important;flex:none!important;padding:10px 52px 10px 10px!important;border:1px solid var(--theme-border,var(--os-line))!important;border-radius:0!important;background:var(--theme-card,var(--os-panel))!important;color:var(--theme-text,var(--os-text))!important;text-align:left!important;overflow:hidden!important;box-shadow:none!important}
+#jingOfflineScreens .os-role .portrait{display:block!important;flex:0 0 94px!important;width:94px!important;height:96px!important;min-width:94px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:var(--theme-card-soft,var(--os-panel-2))!important;overflow:hidden!important}
+#jingOfflineScreens .os-role img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;object-fit:cover!important;object-position:center 28%!important;border:0!important;border-radius:0!important;filter:none!important;opacity:1!important}
+#jingOfflineScreens .os-role .fallback{display:grid!important;width:100%!important;height:100%!important;place-items:center!important;border-radius:0!important;background:var(--theme-card-soft,var(--os-panel-2))!important;color:var(--theme-accent-deep,var(--os-accent))!important;font-size:34px!important;font-weight:650!important}
+#jingOfflineScreens .os-role-copy{display:flex!important;flex:1 1 auto!important;min-width:0!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:7px!important}
+#jingOfflineScreens .os-role strong{display:block!important;max-width:100%!important;margin:0!important;padding:0!important;color:var(--theme-text,var(--os-text))!important;font-size:17px!important;font-weight:680!important;line-height:1.4!important;letter-spacing:.015em!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#jingOfflineScreens .os-role-tag{display:inline-flex!important;align-items:center!important;min-height:20px!important;padding:3px 8px!important;border:1px solid color-mix(in srgb,var(--theme-accent,var(--os-accent)) 28%,var(--theme-border,var(--os-line)))!important;border-radius:0!important;background:color-mix(in srgb,var(--theme-accent,var(--os-accent)) 7%,transparent)!important;color:var(--theme-accent-deep,var(--os-accent))!important;font-size:9px!important;font-weight:650!important;letter-spacing:.1em!important;line-height:1.3!important}
+#jingOfflineScreens .os-role-hint{font-size:12px!important;line-height:1.55!important;color:var(--theme-text-muted,var(--os-muted))!important}
+#jingOfflineScreens .os-role::after{content:"›"!important;position:absolute!important;right:15px!important;top:50%!important;transform:translateY(-50%)!important;display:grid!important;place-items:center!important;width:28px!important;height:28px!important;border:1px solid var(--theme-border,var(--os-line))!important;border-radius:0!important;background:var(--theme-card-soft,var(--os-panel-2))!important;color:var(--theme-accent-deep,var(--os-accent))!important;font-size:22px!important;line-height:1!important}
+#jingOfflineScreens .os-role:hover{border-color:var(--theme-accent,var(--os-accent))!important}
+#jingOfflineScreens .os-role:active{transform:none!important;border-color:var(--theme-accent,var(--os-accent))!important;background:var(--theme-card-soft,var(--os-panel-2))!important}
+#jingOfflineScreens .os-role:focus-visible{outline:2px solid var(--theme-accent,var(--os-accent))!important;outline-offset:3px!important}
+@media(max-width:420px){#jingOfflineScreens .os-roles-intro{padding:23px 18px 14px!important}#jingOfflineScreens .os-roles{gap:10px!important;padding-left:14px!important;padding-right:14px!important}#jingOfflineScreens .os-role{gap:12px!important;min-height:102px!important;padding:8px 42px 8px 8px!important}#jingOfflineScreens .os-role .portrait{flex-basis:80px!important;width:80px!important;min-width:80px!important;height:84px!important}}
+@media(min-width:700px){#jingOfflineScreens .os-roles{padding-left:24px!important;padding-right:24px!important}#jingOfflineScreens .os-role{min-height:126px!important;padding:12px 54px 12px 12px!important}#jingOfflineScreens .os-role .portrait{flex-basis:104px!important;width:104px!important;min-width:104px!important;height:102px!important}}
+</style>
 </body>
-
 </html>
-
-
-
-
-
-
-
 <!-- 小说创作界面视觉重做：仅作用于阅读写作与 AI 章节弹层，不改变功能逻辑 -->
-
