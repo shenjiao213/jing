@@ -76,8 +76,9 @@ try {
   if (isOldDefault) localStorage.removeItem('jing-desktop-grid-layout-v2');
   let clock = null;
   try { clock = JSON.parse(localStorage.getItem('jing-clock-widget-position-v2') || 'null'); } catch (_) {}
-  if (!clock || (isOldDefault && Number(clock.page) === 0 && [0, 5, 24].includes(Number(clock.index)))) {
-    localStorage.setItem('jing-clock-widget-position-v2', JSON.stringify({page:0,index:1}));
+  // 只在首次安装或位置数据损坏时初始化；有效的用户位置绝不因默认桌面布局而被覆盖。
+  if (!clock || !Number.isInteger(Number(clock.page)) || !Number.isInteger(Number(clock.index))) {
+    localStorage.setItem('jing-clock-widget-position-v2', JSON.stringify({page:0,index:0}));
   }
 
   // 首次升级只补齐缺失的默认项；已有用户开关和组件位置一律保留。
@@ -202,7 +203,7 @@ button{ font: inherit; }
 .home-clock-widget.moving{ opacity: .86; cursor: grabbing; }
 .home-clock-time{ font-size: clamp(64px, 18vw, 88px); font-weight: 300; line-height: .92; letter-spacing: -3.5px; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: center; }
 .home-clock-date{ margin-top: 5px; font-size: clamp(10px, 2.9vw, 12px); font-weight: 500; letter-spacing: .2px; color: rgba(67,69,63,.78); text-align: center; }
-#desktop:not(.has-home-widget) .home-clock-widget{ display: none; }
+#desktop:not(.has-home-widget) .home-clock-widget{ display: none !important; }
 .pages{ position: absolute; z-index: 2; top: var(--page-top); left: 0; right: 0; bottom: var(--page-bottom); overflow: hidden; touch-action: pan-y; transition: top .18s ease; }
 .page{ position: absolute; inset: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(8, minmax(0, 1fr)); align-content: stretch; row-gap: clamp(3px, .9vh, 8px); column-gap: 2px; padding: 6px clamp(8px, 2.8vw, 14px) 2px; opacity: 0; pointer-events: none; transform: translateX(7%); transition: opacity .18s ease, transform .22s ease; }
 .page.active{ opacity: 1; pointer-events: auto; transform: translateX(0); }
@@ -8401,11 +8402,8 @@ input[type="range"] { accent-color: var(--theme-accent); }
 #homeClockWidget.clock-style-3 .home-clock-secondary{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:7px;border-top:1px solid currentColor;color:inherit;opacity:.84}
 #homeClockWidget.clock-style-3 .home-clock-secondary-label{font-size:clamp(8px,2.2vw,10px);font-weight:700;letter-spacing:.6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #homeClockWidget.clock-style-3 .home-clock-secondary strong{font-size:clamp(18px,5vw,23px);font-weight:350;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
-/* 4 — signature clock. */
-#homeClockWidget.clock-style-4{flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;color:var(--clock-ink);padding:6px!important}
-#homeClockWidget.clock-style-4 .home-clock-time{justify-content:flex-start;font-size:clamp(48px,15vw,74px);font-weight:300;letter-spacing:-4px}
-#homeClockWidget.clock-style-4 .home-clock-date{display:none}
-#homeClockWidget.clock-style-4 .home-clock-signature{display:block;margin-top:8px;font-family:Georgia,"Songti SC",serif;font-size:13px;font-style:italic;letter-spacing:.25px;color:inherit;opacity:.78}
+/* 4 — signature clock: 4 columns × 2 rows. Large time left, signature right; date and live music controls below. */
+#homeClockWidget .home-clock-mini-player{display:none}
 /* 5 — mechanical digital typography, no heavy base panel. */
 #homeClockWidget.clock-style-5{flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:7px;color:var(--clock-ink)}
 #homeClockWidget.clock-style-5:before{content:"DIGITAL  /  24H";display:block;font-family:"Roboto Mono","SFMono-Regular",monospace;font-size:9px;font-weight:700;letter-spacing:2px;opacity:.55}
@@ -8420,7 +8418,7 @@ input[type="range"] { accent-color: var(--theme-accent); }
 #homeClockWidget.clock-style-7{flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--clock-ink);text-shadow:0 1px 14px rgba(255,255,255,.45)}
 #homeClockWidget.clock-style-7 .home-clock-time{flex-direction:row;font-size:clamp(64px,18vw,88px);font-weight:300;letter-spacing:-3.5px;line-height:.92}
 #homeClockWidget.clock-style-7 .home-clock-date{margin-top:5px;font-size:clamp(10px,2.9vw,12px);letter-spacing:.2px}
-@media(max-width:380px){.clock-style-grid{gap:8px}.clock-style-option{padding:8px}.clock-style-sample{height:100px!important;min-height:100px!important}#homeClockWidget.clock-style-2 .home-clock-time{font-size:clamp(54px,17vw,78px)}#homeClockWidget.clock-style-4 .home-clock-time{font-size:clamp(42px,13vw,62px)}#homeClockWidget.clock-style-3 .home-clock-time{font-size:clamp(36px,11.5vw,48px)}}
+@media(max-width:380px){.clock-style-grid{gap:8px}.clock-style-option{padding:8px}.clock-style-sample{height:100px!important;min-height:100px!important}#homeClockWidget.clock-style-2 .home-clock-time{font-size:clamp(54px,17vw,78px)}#homeClockWidget.clock-style-3 .home-clock-time{font-size:clamp(36px,11.5vw,48px)}}
 
 
 /* consolidated stylesheet segment 33 */
@@ -9750,6 +9748,71 @@ document.addEventListener('DOMContentLoaded',()=>{
 #filmPhotoWidgetDetail .film-photo-url-row .widget-action{flex:0 0 auto;padding:7px 8px;font-size:11px;white-space:nowrap}
 @media(max-width:430px){#filmPhotoWidgetDetail .film-photo-url-row{gap:4px}#filmPhotoWidgetDetail .film-photo-url-row .widget-action{padding:7px 5px;font-size:10px}}
 </style>
+
+<style id="jing-clock-style4-layout-final">
+/* 唯一签名时钟布局：上排时间2格＋签名/日期2格；下排播放器4格。 */
+#homeClockWidget.clock-style-4{
+ display:grid!important;
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important;
+ align-items:stretch!important;justify-items:stretch!important;
+ row-gap:0!important;column-gap:0!important;
+ padding:5px 9px!important;box-sizing:border-box!important;overflow:hidden!important;
+}
+#homeClockWidget.clock-style-4 .home-clock-time{
+ grid-column:1 / span 2!important;grid-row:1!important;
+ align-self:center!important;justify-self:stretch!important;
+ font-size:clamp(64px,19vw,96px)!important;letter-spacing:-5px!important;line-height:.88!important;
+}
+#homeClockWidget.clock-style-4 .home-clock-signature-date{
+ grid-column:3 / span 2!important;grid-row:1!important;
+ align-self:stretch!important;justify-self:stretch!important;
+ display:flex!important;flex-direction:column!important;
+ align-items:stretch!important;justify-content:flex-end!important;
+ gap:clamp(9px,2.5vw,14px)!important;min-width:0!important;min-height:0!important;
+ padding:5px 3px 7px 10px!important;box-sizing:border-box!important;
+}
+#homeClockWidget.clock-style-4 .home-clock-signature{
+ display:block!important;order:0!important;align-self:flex-end!important;
+ margin:0!important;padding:0!important;max-width:100%!important;
+ font-size:clamp(13px,3.6vw,17px)!important;line-height:1.25!important;
+ font-weight:450!important;letter-spacing:.1px!important;text-align:right!important;
+ overflow-wrap:anywhere!important;opacity:.84!important;
+}
+#homeClockWidget.clock-style-4 .home-clock-date{
+ display:block!important;order:1!important;align-self:flex-end!important;
+ margin:0!important;padding:0!important;
+ font-size:clamp(9px,2.35vw,11px)!important;line-height:1.2!important;
+ letter-spacing:.15px!important;text-align:right!important;white-space:nowrap!important;
+ opacity:.7!important;
+}
+#homeClockWidget.clock-style-4 .home-clock-mini-player{
+ grid-column:1 / -1!important;grid-row:2!important;
+ align-self:stretch!important;justify-self:stretch!important;
+ min-width:0!important;min-height:0!important;max-height:none!important;height:100%!important;
+ display:flex!important;align-items:center!important;gap:12px!important;
+ padding:7px 10px 3px!important;overflow:hidden!important;
+ border-top:1px solid color-mix(in srgb,currentColor 22%,transparent)!important;
+ box-sizing:border-box!important;
+}
+#homeClockWidget.clock-style-4 .home-clock-mini-cover{display:grid!important;place-items:center!important;width:42px!important;height:42px!important;flex:0 0 42px!important;border-radius:7px!important;background-size:cover!important;background-position:center!important}
+#homeClockWidget.clock-style-4 .home-clock-mini-meta{display:flex!important;flex:1 1 auto!important;min-width:0!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;overflow:hidden!important;text-align:left!important}
+#homeClockWidget.clock-style-4 .home-clock-mini-meta strong{display:block!important;width:100%!important;align-self:flex-start!important;text-align:left!important;font-size:12px!important;line-height:1.25!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#homeClockWidget.clock-style-4 .home-clock-mini-meta small{display:block!important;width:100%!important;align-self:flex-start!important;text-align:left!important;font-size:10px!important;line-height:1.2!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#homeClockWidget.clock-style-4 .home-clock-mini-player button{display:grid!important;place-items:center!important;flex:0 0 32px!important;width:32px!important;height:36px!important;padding:0!important;border:0!important;background:transparent!important;color:inherit!important;pointer-events:auto!important;touch-action:manipulation!important}
+#homeClockWidget.clock-style-4 .home-clock-mini-player button svg{display:block!important;width:19px!important;height:19px!important;fill:currentColor!important;stroke:none!important}
+@media(max-width:380px){
+ #homeClockWidget.clock-style-4{padding:3px 6px!important}
+ #homeClockWidget.clock-style-4 .home-clock-time{font-size:clamp(58px,17vw,76px)!important;letter-spacing:-4px!important}
+ #homeClockWidget.clock-style-4 .home-clock-signature-date{padding:4px 2px 3px 7px!important}
+ #homeClockWidget.clock-style-4 .home-clock-signature{font-size:clamp(12px,3.4vw,15px)!important}
+ #homeClockWidget.clock-style-4 .home-clock-mini-player{gap:7px!important;padding-inline:6px!important}
+ #homeClockWidget.clock-style-4 .home-clock-mini-cover{width:36px!important;height:36px!important;flex-basis:36px!important}
+ #homeClockWidget.clock-style-4 .home-clock-mini-player button{flex-basis:28px!important;width:28px!important}
+}
+</style>
+
+
 </head>
 <body>
 <div aria-label="京莹正在加载" aria-live="polite" id="jing-startup-splash" role="status">
@@ -9814,9 +9877,17 @@ $('momentLibraryReset')?.addEventListener('click',()=>{state={...defaults,fonts:
 <div aria-hidden="true" class="wallpaper"><img alt="" class="wallpaper-image" decoding="async" draggable="false" fetchpriority="high" id="wallpaperImage" loading="eager"/><video autoplay="" class="wallpaper-video" id="wallpaperVideo" loop="" muted="" playsinline=""></video></div>
 <section aria-label="桌面时间与日期" class="home-clock-widget clock-style-1" id="homeClockWidget">
 <div class="home-clock-time" id="homeClockTime"><span id="homeClockHour">09</span><span class="home-clock-colon">:</span><span class="home-clock-minute" id="homeClockMinute">41</span><small aria-label="上午" class="jdw-clock-period" id="jing-desktop-widgets-clock-period">AM</small></div>
-<div class="home-clock-date" id="homeClockDate">11月05日 星期四</div>
+<div class="home-clock-signature-date" id="homeClockSignatureDate">
+  <div class="home-clock-signature" id="homeClockSignature">make it count</div>
+  <div class="home-clock-date" id="homeClockDate">11月05日 星期四</div>
+</div>
 <div aria-live="off" class="home-clock-secondary" id="homeClockSecondary"><span class="home-clock-secondary-label" id="homeClockSecondaryLabel">TOKYO</span><strong id="homeClockSecondaryTime">22:41</strong></div>
-<div class="home-clock-signature" id="homeClockSignature">make it count</div>
+<div class="home-clock-mini-player" id="homeClockMiniPlayer" aria-label="音乐迷你播放器">
+  <span class="home-clock-mini-cover" id="homeClockMiniCover" aria-hidden="true">♫</span>
+  <span class="home-clock-mini-meta"><strong id="homeClockMiniTitle">尚未播放</strong><small id="homeClockMiniArtist">打开音乐选择歌曲</small></span>
+  <button type="button" id="homeClockMiniPlay" aria-label="播放音乐"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg></button>
+  <button type="button" id="homeClockMiniNext" aria-label="下一首"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5v14M5 5l11 7-11 7z"/></svg></button>
+</div>
 </section>
 <div class="polaroid-caption">little moments</div><div class="polaroid-photo second"><img alt="拍立得第二张照片" id="polaroidImage2"/></div>
 <div aria-label="电子吧唧桌面组件" class="shape-circle" id="eBadgeWidget"><div class="shape-circle film-gloss" id="eBadgeFace"><img alt="电子吧唧图案" id="eBadgeImage"/><video autoplay="" id="eBadgeVideo" loop="" muted="" playsinline="" style="display:none;width:100%;height:100%;object-fit:cover;pointer-events:none"></video></div><div aria-hidden="true" class="shape-circle" id="eBadgeBack"></div></div>
@@ -9831,17 +9902,17 @@ $('momentLibraryReset')?.addEventListener('click',()=>{state={...defaults,fonts:
 <div class="jdw-edit-heading">
 <span class="jdw-eyebrow">HOME SCREEN</span>
 <h2 class="jdw-edit-title">桌面组件</h2>
-<p class="jdw-edit-subtitle">在桌面空白处双指向内捏合，添加或管理小组件。</p>
+<p class="jdw-edit-subtitle">双指捏合管理组件</p>
 </div>
 <button class="jdw-done-button" id="widgetEditDone" type="button">完成</button>
 </header>
 <button class="jdw-add-entry" id="widgetAddOpen" type="button">
 <span aria-hidden="true" class="jdw-add-icon">＋</span>
-<span class="jdw-add-copy"><strong>添加小组件</strong><small>浏览组件样式并添加到桌面</small></span>
+<span class="jdw-add-copy"><strong>添加小组件</strong><small>浏览并添加组件</small></span>
 <svg aria-hidden="true" viewbox="0 0 24 24"><path d="m9 5 7 7-7 7"></path></svg>
 </button>
 <div class="jdw-section-heading">
-<div><h3>当前桌面组件</h3><p>点按调整设置；可在桌面拖动组件调整位置</p></div>
+<div><h3>当前桌面组件</h3><p>点按设置，拖动调整位置</p></div>
 <span class="jdw-count" id="widgetEditCount">0 个</span>
 </div>
 <div aria-live="polite" class="jdw-current-list" id="widgetEditCurrentList"></div>
@@ -9851,10 +9922,10 @@ $('momentLibraryReset')?.addEventListener('click',()=>{state={...defaults,fonts:
 <button aria-label="返回上一级" class="jdw-icon-button jdw-catalog-back-button" id="widgetCatalogBack" type="button">
 <svg aria-hidden="true" viewbox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5M8.5 12H20"></path></svg>
 </button>
-<div><span class="jdw-eyebrow">WIDGET GALLERY</span><h2>添加小组件</h2><p>选择一个组件添加到桌面</p></div>
+<div><span class="jdw-eyebrow">WIDGET GALLERY</span><h2>添加小组件</h2><p>选择组件添加到桌面</p></div>
 </header>
 <div class="jdw-catalog-intro">
-<div><strong>挑选桌面组件</strong><span>选择喜欢的样式，添加后可继续自定义内容与外观。</span></div>
+<div><strong>挑选桌面组件</strong><span>选样式后可自定义</span></div>
 <span class="jdw-catalog-total" id="widgetCatalogTotal">已添加 0 / 3</span>
 </div>
 <div aria-live="polite" class="jdw-catalog-grid" id="widgetCatalogGrid"></div>
@@ -11242,22 +11313,45 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
   let pageSlots = [emptyPage(), emptyPage(), emptyPage()];
   let jingBeautifyDockSlots = [null, null, null, null];
   const DESKTOP_GRID_LAYOUT_KEY = 'jing-desktop-grid-layout-v3';
+  const DESKTOP_GRID_LAYOUT_BACKUP_KEY = 'jing-desktop-grid-layout-backup-v1';
   const DESKTOP_FOLDERS_KEY = 'jing-desktop-folders-v1';
   let desktopFolders = {};
+  // Declare page state before any restore/save call. The previous ordering called
+  // persistDesktopGridLayout() while activePage was still in its TDZ; the catch
+  // swallowed that ReferenceError and left the write sequence half-complete.
+  let activePage = 0;
+  try {
+    const savedPage = Number(localStorage.getItem('jing-desktop-active-page-v1'));
+    if (Number.isInteger(savedPage) && savedPage >= 0 && savedPage < PAGE_COUNT) activePage = savedPage;
+  } catch (_) {}
   const knownAppIds = new Set([...homeApps, ...jingBeautifyDockApps].map(app => app.id));
   const isFolderId = id => typeof id === 'string' && id.startsWith('jing-folder-');
+  function validDesktopSnapshot(value) {
+    return !!value && Array.isArray(value.pages) && value.pages.length > 0 && value.pages.some(Array.isArray);
+  }
+  function readDesktopSnapshot(key) {
+    try { const value = JSON.parse(localStorage.getItem(key) || 'null'); return validDesktopSnapshot(value) ? value : null; }
+    catch (_) { return null; }
+  }
   function persistDesktopGridLayout() {
-    try { localStorage.setItem(DESKTOP_GRID_LAYOUT_KEY, JSON.stringify({ pages: pageSlots, dock: jingBeautifyDockSlots, folders: desktopFolders })); localStorage.setItem(DESKTOP_FOLDERS_KEY, JSON.stringify(desktopFolders)); } catch (_) {}
+    const snapshot = JSON.stringify({ version: 3, pages: pageSlots, dock: jingBeautifyDockSlots, folders: desktopFolders, activePage, savedAt: Date.now() });
+    // Write independent recovery copies. A failed storage write must not trigger
+    // a later factory-layout migration that overwrites the user's arrangement.
+    let wrote = false;
+    for (const key of [DESKTOP_GRID_LAYOUT_KEY, 'jing-desktop-grid-layout-v2', DESKTOP_GRID_LAYOUT_BACKUP_KEY]) {
+      try { localStorage.setItem(key, snapshot); wrote = true; } catch (_) {}
+    }
+    try { localStorage.setItem(DESKTOP_FOLDERS_KEY, JSON.stringify(desktopFolders)); } catch (_) {}
+    try { localStorage.setItem('jing-desktop-active-page-v1', String(activePage)); } catch (_) {}
+    return wrote;
   }
   function restoreDesktopGridLayout() {
-    let restored = null;
-    try { restored = JSON.parse(localStorage.getItem(DESKTOP_GRID_LAYOUT_KEY) || 'null'); } catch (_) {}
-    let hasValidCache = !!restored && Array.isArray(restored.pages) && restored.pages.some(Array.isArray);
-    if (!hasValidCache) {
-      let legacy = null;
-      try { legacy = JSON.parse(localStorage.getItem('jing-desktop-grid-layout-v2') || 'null'); } catch (_) {}
-      if (legacy && Array.isArray(legacy.pages) && legacy.pages.some(Array.isArray)) { restored = legacy; hasValidCache = true; }
-    }
+    // Prefer the newest valid snapshot, then recover from either independent copy.
+    let restored = readDesktopSnapshot(DESKTOP_GRID_LAYOUT_KEY)
+      || readDesktopSnapshot(DESKTOP_GRID_LAYOUT_BACKUP_KEY)
+      || readDesktopSnapshot('jing-desktop-grid-layout-v2');
+    const hadAnySavedData = ['jing-desktop-grid-layout-v3', 'jing-desktop-grid-layout-backup-v1', 'jing-desktop-grid-layout-v2']
+      .some(key => { try { return localStorage.getItem(key) !== null; } catch (_) { return false; } });
     desktopFolders = {};
     let folderSource = restored?.folders;
     if (!folderSource) { try { folderSource = JSON.parse(localStorage.getItem(DESKTOP_FOLDERS_KEY) || '{}'); } catch (_) { folderSource = {}; } }
@@ -11268,15 +11362,20 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
         if (items.length >= 2) desktopFolders[id] = { name: String(raw.name || '文件夹').slice(0, 24), items, size: ['1x1','2x1','1x2','2x2'].includes(raw.size) ? raw.size : '1x1' };
       }
     }
-    if (!hasValidCache) {
+    if (!restored) {
+      // Only create the initial arrangement on a genuinely fresh install.
+      // If saved data exists but is unreadable, do not overwrite it with defaults.
+      if (hadAnySavedData) return false;
       pageSlots = [emptyPage(), emptyPage(), emptyPage()];
       jingBeautifyDockSlots = [null, null, null, null];
       homeApps.forEach((app, i) => { pageSlots[0][8 + i] = app.id; });
       try { localStorage.setItem('jing-clock-widget-position-v2', JSON.stringify({page:0,index:1})); } catch (_) {}
       persistDesktopGridLayout();
-      return;
+      return true;
     }
     const used = new Set();
+    const restoredPages = [emptyPage(), emptyPage(), emptyPage()];
+    const restoredDock = [null, null, null, null];
     const keptFolders = {};
     for (let pg = 0; pg < PAGE_COUNT; pg++) {
       const source = Array.isArray(restored.pages[pg]) ? restored.pages[pg] : [];
@@ -11285,38 +11384,39 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
         if (isFolderId(id) && desktopFolders[id]) {
           const folder = desktopFolders[id];
           const items = folder.items.filter(appId => !used.has(appId));
-          if (items.length >= 2) {
-            keptFolders[id] = { ...folder, items };
-            pageSlots[pg][ix] = id;
-            items.forEach(appId => used.add(appId));
-          } else if (items.length === 1) {
-            pageSlots[pg][ix] = items[0]; used.add(items[0]);
-          }
+          if (items.length >= 2) { keptFolders[id] = { ...folder, items }; restoredPages[pg][ix] = id; items.forEach(appId => used.add(appId)); }
+          else if (items.length === 1) { restoredPages[pg][ix] = items[0]; used.add(items[0]); }
         } else if (typeof id === 'string' && knownAppIds.has(id) && !used.has(id)) {
-          pageSlots[pg][ix] = id; used.add(id);
+          restoredPages[pg][ix] = id; used.add(id);
         }
       }
     }
     desktopFolders = keptFolders;
     if (Array.isArray(restored.dock)) {
-      for (let ix = 0; ix < jingBeautifyDockSlots.length; ix++) {
+      for (let ix = 0; ix < restoredDock.length; ix++) {
         const id = restored.dock[ix];
-        if (typeof id === 'string' && knownAppIds.has(id) && !used.has(id)) { jingBeautifyDockSlots[ix] = id; used.add(id); }
+        if (typeof id === 'string' && knownAppIds.has(id) && !used.has(id)) { restoredDock[ix] = id; used.add(id); }
       }
     }
+    // Preserve every stored position exactly. Only append genuinely missing app
+    // records into empty cells; never rebuild or reorder existing entries.
     homeApps.forEach(app => {
       if (used.has(app.id)) return;
       for (let pg = 0; pg < PAGE_COUNT; pg++) {
-        const free = pageSlots[pg].findIndex(v => !v);
-        if (free >= 0) { pageSlots[pg][free] = app.id; used.add(app.id); return; }
+        const free = restoredPages[pg].findIndex(v => !v);
+        if (free >= 0) { restoredPages[pg][free] = app.id; used.add(app.id); return; }
       }
     });
+    pageSlots = restoredPages;
+    jingBeautifyDockSlots = restoredDock;
+    if (Number.isInteger(Number(restored.activePage)) && Number(restored.activePage) >= 0 && Number(restored.activePage) < PAGE_COUNT) activePage = Number(restored.activePage);
     persistDesktopGridLayout();
+    return true;
   }
-
   restoreDesktopGridLayout();
+  window.addEventListener('pagehide', persistDesktopGridLayout);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') persistDesktopGridLayout(); });
   
-  let activePage = 0;
   let pressTimer = null;
   let drag = null;
   let dragGhost = null;
@@ -11386,42 +11486,16 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
   };
 
   function ensureClockHasSpace() {
-    const slots = pageSlots[clockPage];
-    const covered = clockCoveredSlots(clockIndex);
-    const hasApp = covered.some(idx => slots[idx]);
-    if (hasApp) {
-      let found = false;
-      for (let i = 0; i < GRID_SIZE; i++) {
-        const row = Math.floor(i / 4), col = i % 4;
-        if (row > 6 || col > 2) continue;
-        const testCovered = clockCoveredSlots(i);
-        if (testCovered.every(idx => !slots[idx])) {
-          clockIndex = normalizeClockIndex(i);
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        for (let p = 0; p < PAGE_COUNT; p++) {
-          if (p === clockPage) continue;
-          const pSlots = pageSlots[p];
-          for (let i = 0; i < GRID_SIZE; i++) {
-            const row = Math.floor(i / 4), col = i % 4;
-            if (row > 6 || col > 2) continue;
-            const testCovered = clockCoveredSlots(i);
-            if (testCovered.every(idx => !pSlots[idx])) {
-              clockPage = p;
-              clockIndex = normalizeClockIndex(i);
-              found = true;
-              break;
-            }
-          }
-          if (found) break;
-        }
-      }
-    }
-    try { localStorage.setItem('jing-clock-widget-position-v2', JSON.stringify({ page: clockPage, index: clockIndex })); } catch (_) {}
+    // 时间栏是固定网格组件：其 page/index 由 jing-clock-widget-position-v2 持久化。
+    // 桌面每次重建时只迁出占用时间栏格子的应用图标，不再反向挪动时间栏。
+    const before = JSON.stringify(pageSlots);
+    relocateAppsUnderClock(clockPage, clockIndex);
+    if (before !== JSON.stringify(pageSlots)) persistDesktopGridLayout();
+    try {
+      localStorage.setItem('jing-clock-widget-position-v2', JSON.stringify({page:clockPage,index:clockIndex}));
+    } catch (_) {}
   }
+
 
 
   function folderSizeParts(folder) {
@@ -11488,7 +11562,7 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
       dot.className = 'page-dot' + (index === activePage ? ' active' : '');
       dot.setAttribute('aria-label', `第${index + 1}页`);
       dot.setAttribute('aria-current', index === activePage ? 'page' : 'false');
-      dot.addEventListener('click', () => { if (drag) return; activePage = index; renderDesktop(); });
+      dot.addEventListener('click', () => { if (drag) return; activePage = index; persistDesktopGridLayout(); renderDesktop(); });
       pageNavElement.appendChild(dot);
     }
     positionClockWidget();
@@ -11575,7 +11649,7 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
     getPageSlots: pageIndex => pageSlots[pageIndex],
     getLocation: id => findLocation(id),
     getActivePage: () => activePage,
-    setActivePage: pageIndex => { activePage = Math.max(0, Math.min(PAGE_COUNT - 1, Number(pageIndex) || 0)); renderDesktop(); },
+    setActivePage: pageIndex => { activePage = Math.max(0, Math.min(PAGE_COUNT - 1, Number(pageIndex) || 0)); persistDesktopGridLayout(); renderDesktop(); },
     moveAppToPage: (id, pageIndex, slotIndex) => moveAppToPage(id, pageIndex, slotIndex),
     render: () => renderDesktop(),
     pushAppsFromFootprint(pageIndex, index, reservedByWidgets, exactCoveredSlots) {
@@ -11921,16 +11995,14 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
   
   // There are six selectable clock styles (2 through 7).
   // Only style 2 is explicitly a tall 2-column x 3-row widget.
-  // Styles 3, 4, 5, 6 and 7 all use a compact 2-column x 2-row footprint.
+  // Style 4 uses a horizontal 4-column x 2-row footprint; styles 3, 5, 6 and 7 use 2-column x 2-row.
   // Keep one authoritative mapping for placement, collision handling and snapping.
-  function clockWidgetRows() {
-    if (!homeClockWidget) return 2;
-    return homeClockWidget.classList.contains('clock-style-2') ? 3 : 2;
-  }
+  function clockWidgetRows() { if (!homeClockWidget) return 2; return homeClockWidget.classList.contains('clock-style-2') ? 3 : 2; }
+  function clockWidgetColumns() { return homeClockWidget?.classList.contains('clock-style-4') ? 4 : 2; }
   function clockGridFootprint(page, row, col, rows) {
     const slots = [...(page?.querySelectorAll('.slot') || [])];
     const rects = [];
-    for (let rr = 0; rr < rows; rr++) for (let cc = 0; cc < 2; cc++) {
+    for (let rr = 0; rr < rows; rr++) for (let cc = 0; cc < clockWidgetColumns(); cc++) {
       const slot = slots[(row + rr) * 4 + col + cc];
       if (!slot) return null;
       const r = slot.getBoundingClientRect();
@@ -11940,24 +12012,42 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
     return {left:Math.min(...rects.map(r=>r.left)),top:Math.min(...rects.map(r=>r.top)),right:Math.max(...rects.map(r=>r.right)),bottom:Math.max(...rects.map(r=>r.bottom))};
   }
   function clockCoveredSlots(index) {
-    const rows = clockWidgetRows(), row = Math.floor(index / 4), col = index % 4;
-    const safeRow = Math.min(8 - rows, Math.max(0, row)), safeCol = Math.min(2, Math.max(0, col));
-    const covered = []; for (let r=0;r<rows;r++) for(let c=0;c<2;c++) covered.push((safeRow+r)*4+safeCol+c); return covered;
+    const rows = clockWidgetRows(), cols=clockWidgetColumns(), row = Math.floor(index / 4), col = index % 4;
+    const safeRow = Math.min(8 - rows, Math.max(0, row)), safeCol = Math.min(4-cols, Math.max(0, col));
+    const covered = []; for (let r=0;r<rows;r++) for(let c=0;c<cols;c++) covered.push((safeRow+r)*4+safeCol+c); return covered;
   }
-  function normalizeClockIndex(index) { const rows=clockWidgetRows(); return Math.max(0, Math.min(8-rows, Math.floor(index / 4))) * 4 + Math.max(0, Math.min(2, index % 4)); }
+  function normalizeClockIndex(index) { const rows=clockWidgetRows(),cols=clockWidgetColumns(); return Math.max(0, Math.min(8-rows, Math.floor(index / 4))) * 4 + Math.max(0, Math.min(4-cols, index % 4)); }
   
+  function syncClockPageVisibility() {
+    if (!homeClockWidget || !desktop) return false;
+    let enabled = true;
+    try { enabled = localStorage.getItem('jing-clock-widget-enabled') !== 'false'; } catch (_) {}
+    // 时间栏的显示状态只由组件启用状态决定；所在页由 .page 自身的分页动画控制，
+    // 不再在翻页时手动隐藏/显示，也不把它当作悬浮层挂在桌面视口上。
+    desktop.classList.toggle('has-home-widget', enabled);
+    homeClockWidget.setAttribute('aria-hidden', String(!enabled));
+    return enabled;
+  }
+  window.__jingClockSyncPageVisibility = syncClockPageVisibility;
+
   function positionClockWidget() {
     if (!homeClockWidget || !pagesElement) return;
-    desktop.classList.toggle('has-home-widget', activePage === clockPage);
-    const page = pagesElement.querySelector(`.page[data-page="${activePage}"]`);
-    if (activePage !== clockPage || !page) return;
+    const enabled = syncClockPageVisibility();
+    const page = pagesElement.querySelector(`.page[data-page="${clockPage}"]`);
+    if (!page) return;
+    // 将时间栏作为真实子节点挂到所属 .page；分页时跟随整页移动，
+    // 同时保留原有网格占位、避让和拖动吸附数据。
+    if (homeClockWidget.parentElement !== page) page.appendChild(homeClockWidget);
+    homeClockWidget.style.display = enabled ? '' : 'none';
     const slots = [...page.querySelectorAll('.slot')], index = normalizeClockIndex(clockIndex);
-    const row = Math.floor(index / 4), col = index % 4, rows=clockWidgetRows();
-    const covered=[]; for(let r=0;r<rows;r++) for(let c=0;c<2;c++){const node=slots[(row+r)*4+col+c];if(!node)return;covered.push(node.getBoundingClientRect());}
-    const left=Math.min(...covered.map(r=>r.left)),top=Math.min(...covered.map(r=>r.top));
-    const right=Math.max(...covered.map(r=>r.right)),bottom=Math.max(...covered.map(r=>r.bottom));
+    const row = Math.floor(index / 4), col = index % 4, rows=clockWidgetRows(),cols=clockWidgetColumns();
+    const covered=[]; for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){const node=slots[(row+r)*4+col+c];if(!node)return;covered.push(node.getBoundingClientRect());}
+    const pr=page.getBoundingClientRect();
+    const left=Math.min(...covered.map(r=>r.left))-pr.left,top=Math.min(...covered.map(r=>r.top))-pr.top;
+    const right=Math.max(...covered.map(r=>r.right))-pr.left,bottom=Math.max(...covered.map(r=>r.bottom))-pr.top;
     homeClockWidget.style.left = `${left}px`; homeClockWidget.style.top = `${top}px`;
     homeClockWidget.style.width = `${right - left}px`; homeClockWidget.style.height = `${bottom - top}px`;
+    homeClockWidget.style.zIndex = '3';
   }
   
   function relocateAppsUnderClock(pageIndex, index) {
@@ -11991,7 +12081,7 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
       return clockCoveredSlots(index).some(i=>blocked.includes(i)&&!(page===target.page&&targetCells.includes(i)));
     };
     const options=[];
-    for(let page=0;page<PAGE_COUNT;page++)for(let row=0;row<=8-clockRows;row++)for(let col=0;col<=2;col++){
+    for(let page=0;page<PAGE_COUNT;page++)for(let row=0;row<=8-clockRows;row++)for(let col=0;col<=4-clockWidgetColumns();col++){
       const index=row*4+col;
       if(overlapsTarget(page,index)||occupiedByWidgets(page,index))continue;
       const score=Math.abs(page-clockPage)*100+Math.abs(row-Math.floor(clockIndex/4))*4+Math.abs(col-clockIndex%4);
@@ -12008,9 +12098,13 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
   };
 
   window.__jingClockLayoutChanged = () => {
-    const before=clockIndex; clockIndex=normalizeClockIndex(clockIndex);
-    if(clockIndex!==before) relocateAppsUnderClock(clockPage,clockIndex);
-    try { localStorage.setItem('jing-clock-widget-position-v2', JSON.stringify({page:clockPage,index:clockIndex})); } catch (_) {}
+    clockIndex=normalizeClockIndex(clockIndex);
+    // 样式可能把时钟从2列扩成4列；无论索引是否变化，都必须释放新占用的网格格子。
+    relocateAppsUnderClock(clockPage,clockIndex);
+    try {
+      localStorage.setItem('jing-clock-widget-position-v2', JSON.stringify({page:clockPage,index:clockIndex}));
+      persistDesktopGridLayout();
+    } catch (_) {}
     requestAnimationFrame(positionClockWidget);
   };
   function restoreClockPosition() {
@@ -12027,6 +12121,7 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
   }
   
   homeClockWidget.addEventListener('pointerdown', event => {
+    if (event.target.closest('button')) return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     clockLongPressed=false;
     clockStart = { x: event.clientX, y: event.clientY, left: homeClockWidget.getBoundingClientRect().left, top: homeClockWidget.getBoundingClientRect().top, pointerId: event.pointerId };
@@ -12057,18 +12152,17 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
     event.preventDefault();
     const maxLeft = Math.max(0, window.innerWidth - homeClockWidget.offsetWidth);
     const maxTop = Math.max(0, window.innerHeight - homeClockWidget.offsetHeight);
-    homeClockWidget.style.left = `${Math.max(0, Math.min(maxLeft, event.clientX - clockDrag.offsetX))}px`;
-    homeClockWidget.style.top = `${Math.max(0, Math.min(maxTop, event.clientY - clockDrag.offsetY))}px`;
+    const clockParentRect=homeClockWidget.parentElement?.getBoundingClientRect()||{left:0,top:0};
+    homeClockWidget.style.left = `${event.clientX - clockDrag.offsetX - clockParentRect.left}px`;
+    homeClockWidget.style.top = `${event.clientY - clockDrag.offsetY - clockParentRect.top}px`;
     const edge = 22, now = Date.now();
     if (!clockDrag.lastPageChange || now - clockDrag.lastPageChange > 650) {
       if (event.clientX < edge && activePage > 0) {
         activePage--; clockPage = activePage; clockDrag.lastPageChange = now; renderDesktop();
-        homeClockWidget.style.left = `${Math.max(0, event.clientX - clockDrag.offsetX)}px`;
-        homeClockWidget.style.top = `${Math.max(0, event.clientY - clockDrag.offsetY)}px`;
+        {const pr=homeClockWidget.parentElement?.getBoundingClientRect()||{left:0,top:0};homeClockWidget.style.left = `${event.clientX - clockDrag.offsetX - pr.left}px`;homeClockWidget.style.top = `${event.clientY - clockDrag.offsetY - pr.top}px`;}
       } else if (event.clientX > window.innerWidth - edge && activePage < PAGE_COUNT - 1) {
         activePage++; clockPage = activePage; clockDrag.lastPageChange = now; renderDesktop();
-        homeClockWidget.style.left = `${Math.min(window.innerWidth - homeClockWidget.offsetWidth, event.clientX - clockDrag.offsetX)}px`;
-        homeClockWidget.style.top = `${Math.max(0, event.clientY - clockDrag.offsetY)}px`;
+        {const pr=homeClockWidget.parentElement?.getBoundingClientRect()||{left:0,top:0};homeClockWidget.style.left = `${event.clientX - clockDrag.offsetX - pr.left}px`;homeClockWidget.style.top = `${event.clientY - clockDrag.offsetY - pr.top}px`;}
       }
     }
   }, { capture: true, passive: false });
@@ -12087,15 +12181,15 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
       const rows = clockWidgetRows();
       let best = null, bestDist = Infinity;
       for (let row = 0; row <= 8 - rows; row++) {
-        for (let col = 0; col <= 2; col++) {
+        for (let col = 0; col <= 4-clockWidgetColumns(); col++) {
           const covered = [];
           for (let rr = 0; rr < rows; rr++) {
-            for (let cc = 0; cc < 2; cc++) {
+            for (let cc = 0; cc < clockWidgetColumns(); cc++) {
               const slot = slots[(row + rr) * 4 + col + cc];
               if (slot) covered.push(slot.getBoundingClientRect());
             }
           }
-          if (covered.length !== rows * 2) continue;
+          if (covered.length !== rows * clockWidgetColumns()) continue;
           const left = Math.min(...covered.map(r => r.left));
           const top = Math.min(...covered.map(r => r.top));
           const right = Math.max(...covered.map(r => r.right));
@@ -12412,7 +12506,7 @@ function escapeHtml(text) { return String(text).replace(/&/g, '&amp;').replace(/
   pagesElement.addEventListener('pointerup', event => {
     if (!swipeStart || drag || event.pointerId !== swipeStart.pointerId) return;
     const deltaX = event.clientX - swipeStart.x, deltaY = event.clientY - swipeStart.y;
-    if (Math.abs(deltaX) > 52 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) { activePage = Math.max(0, Math.min(PAGE_COUNT - 1, activePage + (deltaX < 0 ? 1 : -1))); renderDesktop(); }
+    if (Math.abs(deltaX) > 52 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25) { activePage = Math.max(0, Math.min(PAGE_COUNT - 1, activePage + (deltaX < 0 ? 1 : -1))); try { localStorage.setItem('jing-desktop-active-page-v1', String(activePage)); } catch (_) {} renderDesktop(); }
     swipeStart = null;
   });
   pagesElement.addEventListener('pointercancel', () => { swipeStart = null; });
@@ -13497,30 +13591,30 @@ window.__jingResolveChatEndpoint = function(base) {
  const defaults={eBadgeWidget:{page:0,index:2},'moment-widget':{page:0,index:8},'three-photo-widget':{page:1,index:0},'four-photo-widget':{page:1,index:4},'film-photo-widget':{page:2,index:0}};
  const keys={eBadgeWidget:'jing-ebadge-grid-v6','moment-widget':'jing-moment-widget-grid-v1','three-photo-widget':'jing-three-photo-grid-v1','four-photo-widget':'jing-four-photo-grid-v1','film-photo-widget':'jing-film-photo-grid-v1'};
  const enabledKey={eBadgeWidget:'jing-ebadge-enabled','moment-widget':'momentWidgetEnabled','three-photo-widget':'jing-three-photo-enabled','four-photo-widget':'jing-four-photo-enabled','film-photo-widget':'jing-film-photo-enabled'};
- const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)); const widthOf=id=>(id==='moment-widget'||id==='three-photo-widget'||id==='four-photo-widget'||id==='film-photo-widget')?4:2; const heightOf=id=>id==='four-photo-widget'?4:id==='film-photo-widget'?1:2;
+ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)); const widthOf=id=>id==='clock'&&document.getElementById('homeClockWidget')?.classList.contains('clock-style-4')?4:(id==='moment-widget'||id==='three-photo-widget'||id==='four-photo-widget'||id==='film-photo-widget')?4:2; const heightOf=id=>id==='clock'&&document.getElementById('homeClockWidget')?.classList.contains('clock-style-4')?2:id==='clock'&&document.getElementById('homeClockWidget')?.classList.contains('clock-style-2')?3:id==='four-photo-widget'?4:id==='film-photo-widget'?1:2;
  const read=(k,d,id)=>{try{const p=JSON.parse(localStorage.getItem(k)||'null');if(!p||!Number.isInteger(+p.page)||!Number.isInteger(+p.index))return {...d,id};const i=+p.index,w=widthOf(id),h=heightOf(id);return {page:clamp(+p.page,0,PAGE_COUNT-1),index:clamp(Math.floor(i/COLS),0,ROWS-h)*COLS+clamp(i%COLS,0,COLS-w),id}}catch(_){return {...d,id}}};
  const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}};
  const isEnabled=id=>{try{return localStorage.getItem(enabledKey[id])==='true'}catch(_){return false}};
  const grids={};ids.forEach(id=>grids[id]=read(keys[id],defaults[id],id));
  // 照片墙真实占位：4列横向 × 2行纵向，共8格；电子吧唧仍按自己的2×2占位。
- const cells=(index,id)=>{const row=Math.floor(index/COLS),col=index%COLS,width=widthOf(id),height=id==='clock'&&document.getElementById('homeClockWidget')?.classList.contains('clock-style-2')?3:heightOf(id);if(!Number.isInteger(index)||row<0||row>ROWS-height||col<0||col>COLS-width)return [];const out=[];for(let y=0;y<height;y++)for(let x=0;x<width;x++)out.push(index+y*COLS+x);return out};
+ const cells=(index,id)=>{const row=Math.floor(index/COLS),col=index%COLS,width=widthOf(id),height=heightOf(id);if(!Number.isInteger(index)||row<0||row>ROWS-height||col<0||col>COLS-width)return [];const out=[];for(let y=0;y<height;y++)for(let x=0;x<width;x++)out.push(index+y*COLS+x);return out};
  const footprint=(id,index)=>cells(index,id);
- function clockPos(){try{const p=JSON.parse(localStorage.getItem('jing-clock-widget-position-v2')||'null');if(p&&Number.isInteger(+p.page)&&Number.isInteger(+p.index)){const i=+p.index;return {page:clamp(+p.page,0,PAGE_COUNT-1),index:clamp(Math.floor(i/COLS),0,ROWS-H)*COLS+clamp(i%COLS,0,COLS-2),id:'clock'}}}catch(_){}return {page:0,index:1,id:'clock'}}
+ function clockPos(){try{const p=JSON.parse(localStorage.getItem('jing-clock-widget-position-v2')||'null');if(p&&Number.isInteger(+p.page)&&Number.isInteger(+p.index)){const i=+p.index;const w=widthOf('clock'),h=heightOf('clock');return {page:clamp(+p.page,0,PAGE_COUNT-1),index:clamp(Math.floor(i/COLS),0,ROWS-h)*COLS+clamp(i%COLS,0,COLS-w),id:'clock'}}}catch(_){}return {page:0,index:0,id:'clock'}}
  function overlap(a,b){if(!a||!b||a.page!==b.page)return false;const ai=footprint(a.id||'eBadgeWidget',a.index),bi=footprint(b.id||'eBadgeWidget',b.index);return ai.some(i=>bi.includes(i))}
  function pageSlots(pg){return desk.querySelector(`.page[data-page="${pg}"]`)?.querySelectorAll('.slot')||[]}
- function geom(pg,index,id){const slots=pageSlots(pg),w=widthOf(id),h=heightOf(id),row=Math.floor(index/COLS),col=index%COLS,page=desk.querySelector(`.page[data-page="${pg}"]`),pages=desk.querySelector(".pages");if(!page||!pages||col+w>COLS||row+h>ROWS)return null;const first=slots[index],lastTop=slots[index+w-1],lastBottom=slots[index+(h-1)*COLS+w-1];if(!first||!lastTop||!lastBottom)return null;const base=pages.getBoundingClientRect(),dr=desk.getBoundingClientRect(),left=base.left-dr.left+first.offsetLeft,top=base.top-dr.top+first.offsetTop,right=base.left-dr.left+lastTop.offsetLeft+lastTop.offsetWidth,bottom=base.top-dr.top+lastBottom.offsetTop+lastBottom.offsetHeight;return right>left&&bottom>top?{left,top,width:right-left,height:bottom-top}:null}
+ function geom(pg,index,id){const slots=pageSlots(pg),w=widthOf(id),h=heightOf(id),row=Math.floor(index/COLS),col=index%COLS,page=desk.querySelector(`.page[data-page="${pg}"]`);if(!page||col+w>COLS||row+h>ROWS)return null;const first=slots[index],lastTop=slots[index+w-1],lastBottom=slots[index+(h-1)*COLS+w-1];if(!first||!lastTop||!lastBottom)return null;const left=first.offsetLeft,top=first.offsetTop,right=lastTop.offsetLeft+lastTop.offsetWidth,bottom=lastBottom.offsetTop+lastBottom.offsetHeight;return right>left&&bottom>top?{left,top,width:right-left,height:bottom-top}:null}
  const candidates=id=>{const width=widthOf(id),height=heightOf(id),out=[];for(let page=0;page<PAGE_COUNT;page++)for(let row=0;row<=ROWS-height;row++)for(let col=0;col<=COLS-width;col++)out.push({page,index:row*COLS+col});return out};
  function appEmpty(pos){const api=window.__desktopGridApi,slots=api?.getPageSlots?.(pos.page);return !!slots&&footprint(pos.id,pos.index).every(i=>!slots[i])}
  function blockers(except,includeDisabled=false){const out=[clockPos()];ids.forEach(id=>{if(id!==except&&(includeDisabled||isEnabled(id)))out.push(grids[id])});return out}
  function free(pos,except,requireEmptyApps=false){pos={...pos,id:except};const g=geom(pos.page,pos.index,except);if(!g)return false;const occupied=blockers(except);if(occupied.some(p=>overlap(pos,p)))return false;return !requireEmptyApps||appEmpty(pos)}
  function bestPosition(id,preferEmpty=true,avoid=null){const cur=grids[id]||defaults[id];let list=candidates(id).filter(p=>free(p,id,preferEmpty)&&(!avoid||!overlap(p,avoid)));const score=p=>Math.abs(p.page-cur.page)*100+Math.abs(Math.floor(p.index/COLS)-Math.floor(cur.index/COLS))*4+Math.abs(p.index%COLS-cur.index%COLS);list.sort((a,b)=>score(a)-score(b));if(!list.length&&preferEmpty){list=candidates(id).filter(p=>free(p,id,false)&&(!avoid||!overlap(p,avoid)));list.sort((a,b)=>score(a)-score(b))}return list[0]||null}
- function place(id){const el=$(id),pos=grids[id];if(!el||!pos)return;const g=geom(pos.page,pos.index,id);if(!g)return;Object.entries({position:'absolute',left:g.left+'px',top:g.top+'px',width:g.width+'px',height:g.height+'px',right:'auto',bottom:'auto',maxWidth:'none',maxHeight:'none',minWidth:'0px',minHeight:'0px',boxSizing:'border-box',margin:'0px'}).forEach(([k,v])=>{if(el.style[k]!==v)el.style[k]=v});el.dataset.gridPage=String(pos.page);el.dataset.gridIndex=String(pos.index)}
+ function place(id){const el=$(id),pos=grids[id],page=desk.querySelector(`.page[data-page="${pos?.page}"]`);if(!el||!pos||!page)return;if(el.parentElement!==page)page.appendChild(el);const g=geom(pos.page,pos.index,id);if(!g)return;Object.entries({position:'absolute',left:g.left+'px',top:g.top+'px',width:g.width+'px',height:g.height+'px',right:'auto',bottom:'auto',maxWidth:'none',maxHeight:'none',minWidth:'0px',minHeight:'0px',boxSizing:'border-box',margin:'0px'}).forEach(([k,v])=>{if(el.style[k]!==v)el.style[k]=v});el.dataset.gridPage=String(pos.page);el.dataset.gridIndex=String(pos.index)}
  function persist(id,pos){grids[id]={page:pos.page,index:pos.index,id};write(keys[id],{page:pos.page,index:pos.index})}
  function setPage(pg){const api=window.__desktopGridApi;if(api?.setActivePage)api.setActivePage(pg);else document.querySelectorAll('.page-dot')[pg]?.click()}
  function reservations(){const out={};const add=(p,id)=>{(out[p.page]??=[]).push(...footprint(id,p.index))};add(clockPos(),'clock');ids.forEach(id=>{if(isEnabled(id))add(grids[id],id)});return out}
  function moveAppsOut(id){const api=window.__desktopGridApi,p=grids[id];if(!api||!p)return;const covered=footprint(id,p.index),slots=api.getPageSlots?.(p.page);if(!slots||!covered.length||!covered.some(i=>slots[i]))return;api.pushAppsFromFootprint?.(p.page,p.index,reservations(),covered)}
  function relocateIfNeeded(id){const pos=grids[id];if(!free(pos,id,false)){const p=bestPosition(id,true);if(p)persist(id,p)}place(id);moveAppsOut(id)}
- function updateVisibility(){const pg=Number(desk.querySelector('.page.active')?.dataset.page ?? window.__desktopGridApi?.getActivePage?.() ?? 0),appOpen=!!document.querySelector('.app-screen.open');ids.forEach(id=>{const el=$(id);if(!el)return;el.style.display=(!appOpen&&isEnabled(id)&&pg===grids[id].page)?((id==='eBadgeWidget'||id==='moment-widget'||id==='three-photo-widget'||id==='four-photo-widget')?'flex':id==='film-photo-widget'?'grid':'block'):'none';el.style.visibility='';})}
+ function updateVisibility(){const appOpen=!!document.querySelector('.app-screen.open');ids.forEach(id=>{const el=$(id);if(!el)return;el.style.display=(!appOpen&&isEnabled(id))?((id==='eBadgeWidget'||id==='moment-widget'||id==='three-photo-widget'||id==='four-photo-widget')?'flex':id==='film-photo-widget'?'grid':'block'):'none';el.style.visibility='';})}
  function refresh(){
    // 先发布除时间栏外的组件占位，再尝试推开时间栏；否则时间栏移动器会把
    // 自己即将进入的照片栏也当成既有障碍，造成看似调用了推移、实际仍被挡住。
@@ -13552,12 +13646,12 @@ window.__jingResolveChatEndpoint = function(base) {
  window.__widgetClockMoved=()=>refresh();
  window.__widgetBeforeAppMove=({targetPage,targetIndex})=>{const target={page:clamp(+targetPage||0,0,PAGE_COUNT-1),index:+targetIndex};ids.forEach(id=>{if(!isEnabled(id))return;if(grids[id].page===target.page&&cells(grids[id].index,id).includes(target.index)){const p=bestPosition(id,true,{page:target.page,index:Math.floor(target.index/COLS)*COLS+(target.index%COLS)});if(p)persist(id,p)}});refresh()};
  let active=null,lastEdge=0;
- function closestPosition(id,centerX,centerY,pg){let best=null,dist=Infinity;for(const p of candidates(id)){if(p.page!==pg||!free(p,id,false))continue;const g=geom(p.page,p.index,id),drect=desk.getBoundingClientRect();if(!g)continue;const d=Math.hypot(drect.left+g.left+g.width/2-centerX,drect.top+g.top+g.height/2-centerY);if(d<dist){dist=d;best=p}}return best}
- function finishSnap(id,el){const r=el.getBoundingClientRect(),pg=window.__desktopGridApi?.getActivePage?.()??Number(desk.querySelector('.page.active')?.dataset.page||0),cx=r.left+r.width/2,cy=r.top+r.height/2,d=desk.getBoundingClientRect();let nearest=null,dist=Infinity;for(const candidate of candidates(id)){if(candidate.page!==pg)continue;const g=geom(candidate.page,candidate.index,id);if(!g)continue;const q=Math.hypot(d.left+g.left+g.width/2-cx,d.top+g.top+g.height/2-cy);if(q<dist){dist=q;nearest=candidate}}if(nearest&&overlap(nearest,clockPos())){window.__widgetGridReservations=reservations();window.__jingMoveClockAwayFromWidget?.(nearest.page,nearest.index,widthOf(id),heightOf(id));}let p=closestPosition(id,cx,cy,pg);if(!p){for(let page=0;page<PAGE_COUNT&&!p;page++)p=closestPosition(id,cx,cy,page)}if(!p)return false;persist(id,p);setPage(p.page);moveAppsOut(id);refresh();return true}
+ function closestPosition(id,centerX,centerY,pg){let best=null,dist=Infinity;for(const p of candidates(id)){if(p.page!==pg||!free(p,id,false))continue;const g=geom(p.page,p.index,id),page=desk.querySelector(`.page[data-page="${p.page}"]`);if(!g||!page)continue;const pr=page.getBoundingClientRect(),d=Math.hypot(pr.left+g.left+g.width/2-centerX,pr.top+g.top+g.height/2-centerY);if(d<dist){dist=d;best=p}}return best}
+ function finishSnap(id,el){const r=el.getBoundingClientRect(),pg=window.__desktopGridApi?.getActivePage?.()??Number(desk.querySelector('.page.active')?.dataset.page||0),cx=r.left+r.width/2,cy=r.top+r.height/2;let nearest=null,dist=Infinity;for(const candidate of candidates(id)){if(candidate.page!==pg)continue;const g=geom(candidate.page,candidate.index,id),page=desk.querySelector(`.page[data-page="${candidate.page}"]`);if(!g||!page)continue;const pr=page.getBoundingClientRect(),q=Math.hypot(pr.left+g.left+g.width/2-cx,pr.top+g.top+g.height/2-cy);if(q<dist){dist=q;nearest=candidate}}if(nearest&&overlap(nearest,clockPos())){window.__widgetGridReservations=reservations();window.__jingMoveClockAwayFromWidget?.(nearest.page,nearest.index,widthOf(id),heightOf(id));}let p=closestPosition(id,cx,cy,pg);if(!p){for(let page=0;page<PAGE_COUNT&&!p;page++)p=closestPosition(id,cx,cy,page)}if(!p)return false;persist(id,p);setPage(p.page);moveAppsOut(id);refresh();return true}
 
- function switchPageAtEdge(x){const now=Date.now();if(now-lastEdge<650)return;const pg=window.__desktopGridApi?.getActivePage?.()??0;let next=pg;if(x<18&&pg>0)next=pg-1;else if(x>window.innerWidth-18&&pg<PAGE_COUNT-1)next=pg+1;if(next!==pg){lastEdge=now;setPage(next);}}
+ function switchPageAtEdge(x){const now=Date.now();if(now-lastEdge<650)return;const pg=window.__desktopGridApi?.getActivePage?.()??0;let next=pg;if(x<18&&pg>0)next=pg-1;else if(x>window.innerWidth-18&&pg<PAGE_COUNT-1)next=pg+1;if(next!==pg){lastEdge=now;setPage(next);if(active?.el){const el=active.el,r=el.getBoundingClientRect(),page=desk.querySelector(`.page[data-page="${next}"]`);if(page){page.appendChild(el);const pr=page.getBoundingClientRect();el.style.left=(r.left-pr.left)+'px';el.style.top=(r.top-pr.top)+'px';}}}}
  let pressTimer=null,longTimer=null,longHandled=false;const photo=$('moment-widget'),menu=$('momentWidgetActionMenu');function openPhotoMenu(){if(!menu)return;menu.hidden=false;const r=photo.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;menu.style.left='0px';menu.style.top='0px';const m=menu.getBoundingClientRect(),pad=12;menu.style.left=Math.max(m.width/2+pad,Math.min(innerWidth-m.width/2-pad,x))+'px';menu.style.top=Math.max(m.height/2+pad,Math.min(innerHeight-m.height/2-pad,y))+'px';}function closePhotoMenu(){if(menu)menu.hidden=true}menu?.addEventListener('click',e=>{const a=e.target.closest('[data-moment-action]')?.dataset.momentAction;if(!a)return;closePhotoMenu();if(a==='remove'){localStorage.setItem('momentWidgetEnabled','false');const t=$('momentWidgetToggle');t?.setAttribute('aria-checked','false');t?.classList.remove('active');refresh();return}const main=$('fontSettingsMain'),screen=$('widgetSettingsScreen'),panel=$('widgetSettingsPanel'),home=$('widgetSettingsHome');if(main){main.classList.add('hidden');main.style.display='none'}if(screen){screen.classList.add('open');screen.setAttribute('aria-hidden','false')}if(panel){panel.style.display='block';panel.classList.add('open');panel.scrollTop=0}if(home)home.style.display='none';$('clockWidgetDetail').style.display='none';$('eBadgeDetail').style.display='none';$('momentVariantsLayout').style.display='grid';$('momentWidgetDetail').style.display='block';document.querySelector('[data-photo-panel="classic"]')?.click();$('momentWidgetDetail').scrollIntoView({block:'start',behavior:'instant'});});document.addEventListener('pointerdown',e=>{if(menu&&!menu.hidden&&!menu.contains(e.target))closePhotoMenu()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closePhotoMenu()});photo?.addEventListener('contextmenu',e=>e.preventDefault());photo?.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;const pos=grids['moment-widget'];active={id:'moment-widget',el:photo,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,offsetX:e.clientX-photo.getBoundingClientRect().left,offsetY:e.clientY-photo.getBoundingClientRect().top,origin:{...pos},moving:false,cancelled:false};longHandled=false;clearTimeout(longTimer);longTimer=setTimeout(()=>{if(active&&!active.moving){longHandled=true;active=null;openPhotoMenu()}},560);});photo?.addEventListener('click',e=>{if(longHandled){e.preventDefault();e.stopImmediatePropagation();longHandled=false}},true);
- window.addEventListener('pointermove',e=>{if(!active||active.pointerId!==e.pointerId)return;const a=active,dist=Math.hypot(e.clientX-a.startX,e.clientY-a.startY);if(!a.moving&&dist>14){a.moving=true;clearTimeout(longTimer);a.el.classList.add('widget-moving')}if(!a.moving)return;e.preventDefault();e.stopImmediatePropagation();const d=desk.getBoundingClientRect();a.el.style.left=(e.clientX-a.offsetX-d.left)+'px';a.el.style.top=(e.clientY-a.offsetY-d.top)+'px';a.el.style.zIndex='50';switchPageAtEdge(e.clientX);},{capture:true,passive:false});
+ window.addEventListener('pointermove',e=>{if(!active||active.pointerId!==e.pointerId)return;const a=active,dist=Math.hypot(e.clientX-a.startX,e.clientY-a.startY);if(!a.moving&&dist>14){a.moving=true;clearTimeout(longTimer);a.el.classList.add('widget-moving')}if(!a.moving)return;e.preventDefault();e.stopImmediatePropagation();const host=a.el.parentElement?.classList.contains('page')?a.el.parentElement:desk,hr=host.getBoundingClientRect();a.el.style.left=(e.clientX-a.offsetX-hr.left)+'px';a.el.style.top=(e.clientY-a.offsetY-hr.top)+'px';a.el.style.zIndex='50';switchPageAtEdge(e.clientX);},{capture:true,passive:false});
  function endDrag(e){if(!active||active.pointerId!==e.pointerId)return;clearTimeout(pressTimer);clearTimeout(longTimer);const a=active;active=null;a.el.classList.remove('widget-moving');a.el.style.cursor='';if(a.moving){e.preventDefault();e.stopImmediatePropagation();const ok=finishSnap(a.id,a.el);a.el.style.zIndex='';if(!ok){persist(a.id,a.origin||grids[a.id]);place(a.id);refresh()}a.el.dataset.gridDragged='1';a.el.dataset.dragged='1';setTimeout(()=>{a.el.dataset.gridDragged='0';a.el.dataset.dragged='0'},300)}else refresh()}
  window.addEventListener('pointerup',endDrag,{capture:true});window.addEventListener('pointercancel',endDrag,{capture:true});
 
@@ -16105,7 +16199,7 @@ function formatTime(v){const d=new Date(v||Date.now());return String(d.getHours(
         const panel=document.createElement('div');panel.className='chat-message-press-panel';panel.setAttribute('role','dialog');panel.setAttribute('aria-label','消息操作');
         const edit=document.createElement('button');edit.type='button';edit.textContent='编辑消息';
         const remove=document.createElement('button');remove.type='button';remove.className='is-danger';remove.textContent='删除消息';
-        const quote=document.createElement('button');quote.type='button';quote.textContent='引用回复';quote.addEventListener('click',()=>{close();const input=$('chatComposerInput');if(!input)return;const quoted=String(message.text||'').trim();if(!quoted){toast('这条消息没有可引用的文字');return}pendingReplyQuote={id:String(message.id||''),from:message.from==='me'?'me':'ai',name:message.from==='me'?'我':role.name,text:quoted};renderReplyQuotePreview();input.focus();});
+        const quote=document.createElement('button');quote.type='button';quote.textContent='引用回复';quote.disabled=message.retracted===true;quote.title=message.retracted===true?'撤回的消息不能引用':'引用回复';quote.addEventListener('click',()=>{close();const input=$('chatComposerInput');if(!input||message.retracted===true)return;const quoted=String(message.text||'').trim();if(!quoted){toast('这条消息没有可引用的文字');return}pendingReplyQuote={id:String(message.id||''),from:message.from==='me'?'me':'ai',name:message.from==='me'?'我':role.name,text:quoted};renderReplyQuotePreview();input.focus();});
         const close=()=>layer.remove();
         let retract=null;
         if(message.from==='me'&&message.retracted!==true){const sentAt=new Date(message.time??message.timestamp??message.sentAt??message.createdAt).getTime();const age=Date.now()-sentAt;if(Number.isFinite(sentAt)&&age>=0&&age<=120000){retract=document.createElement('button');retract.type='button';retract.className='is-danger';retract.textContent='撤回消息';retract.addEventListener('click',()=>{close();const all=threadStore(),key=String(activeRoleId||''),current=Array.isArray(all[key])?all[key]:[];let idx=message.id?current.findIndex(x=>String(x.id)===String(message.id)):-1;if(idx<0)idx=messageIndex;const target=current[idx];if(!target||target.from!=='me'||target.retracted===true){toast('这条消息已无法撤回');return}const t=new Date(target.time??target.timestamp??target.sentAt??target.createdAt).getTime();if(!Number.isFinite(t)||Date.now()-t>120000||Date.now()<t){toast('消息发送已超过两分钟，无法撤回');return}target.retracted=true;target.retractedBy='me';target.retractedAt=new Date().toISOString();target.retractedText='';if(saveThreads(all)){renderMessages();renderContacts();toast('消息已撤回')}else toast('撤回失败，请检查本地存储空间')})}}
@@ -16290,8 +16384,8 @@ function formatTime(v){const d=new Date(v||Date.now());return String(d.getHours(
     const memoryRead=window.__jingMemoryPromptContext?.(String(role?.id||''),String(mask.id||''),recentUser,'conversation');const memory=String(memoryRead||'').trim();
     const maskProfile={name:mask.name||'',realName:profile.realName||profile.personName||profile.name||'',nickname:profile.nickname||profile.remark||'',roleName:profile.roleName||'',gender:profile.gender||'',region:profile.region||'',persona:profile.persona||profile.maskPersona||''};
     return [
-      '【京莹机线上聊天｜完整角色执行规范 V22】本规范只负责当前线上角色聊天。你是当前角色本人，不是通用助手、客服、旁白作者或用户的代言人。先理解当前输入，再决定角色本人会如何回应。',
-      '【固定资料优先级】在系统安全规则和用户本轮明确纠正之后，严格按：角色卡人设 ＞ 当前有效世界书 ＞ 有证据的记忆 ＞ 其他上下文。角色卡决定 AI 本人的身份、人格、价值观、能力与表达；世界书补充设定事实但不得改写人设；记忆只记录已发生事实，不得反向改写人设或世界书；面具只定义用户本人，聊天、场景、建议和推断均为低优先级。不同主体的资料绝不互换。',
+      '【京莹机线上聊天｜完整角色执行规范 V23】本规范只负责当前线上角色聊天。你是当前角色本人，不是通用助手、客服、旁白作者或用户的代言人。先理解当前输入，再决定角色本人会如何回应。',
+      '【固定资料优先级｜不可倒置】资料事实严格按：角色卡人设 ＞ 当前有效世界书 ＞ 有证据的历史记忆 ＞ 其他上下文。角色卡是你是谁、如何思考和表达的最高资料依据；世界书只补充设定事实，不得改写角色卡；记忆只记录有证据的已发生事实，不得反向改写人设或世界书；面具、关系网、聊天片段、场景、用户猜测、模型推断和临时建议均属其他上下文。不同主体的资料绝不互换。用户本轮消息决定当前要回应的内容，但不能仅凭一句话把角色卡、世界书或既有事实改写成另一套设定；只有明确进入资料编辑/纠错流程时，才按对应编辑权限修改资料。',
       '【用户自主权】不得替用户决定、补写或确认台词、动作、表情、心理、情绪、意图、同意、拒绝、身体反应、选择或关系变化。沉默、迟疑、未回复、玩笑和模糊表达都不代表同意。不得擅自修改或创建用户设定、角色卡、关系、记忆、世界观、偏好或设置。角色只能决定自己。需要用户作决定时停下来。',
       '【第一优先级｜当前角色卡人设】角色卡决定 AI 角色的身份、稳定人格、价值观、经历、能力、语言能力、行为边界和表达方式。任何世界书、记忆、聊天记录、场景或模型推断都不得擅自改写角色卡；若角色卡字段缺失，不得自行补造为既定事实。\n'+JSON.stringify(card,null,2),
       '【第二优先级｜当前有效世界书】世界书必须读取正文和适用条目；先核对适用对象、范围、关键词、别名和场景，再应用相关设定。世界书补充世界事实与角色专属设定，但不能覆盖角色卡的人格与身份。\n'+buildWorldBookSystemMessage(role),
@@ -16300,6 +16394,8 @@ function formatTime(v){const d=new Date(v||Date.now());return String(d.getHours(
       recentReplies.length?'【近期角色表达｜用于避免语义重复】\n'+recentReplies.map((x,i)=>(i+1)+'. '+x).join('\n'):'【近期角色表达】没有可用的近期回复。',
       '【资料读取硬规则】每轮生成前按固定顺序实际读取并核对：①当前角色卡完整人设；②当前角色/面具适用的全部已启用世界书正文与条目；③当前绑定范围内有证据的记忆；④近期聊天、线下记录、关系快照与场景。不得只读取标题或摘要，不得跳过已装载资料。若某层未成功读取，明确视为缺失，不得声称已读取或自行补造。固定优先级：人设 ＞ 世界书 ＞ 记忆 ＞ 其他。低层资料与高层冲突时，保留高层；无法判断具体事实时说明未知。',
       '【上下文处理】优先回应用户最新一条消息的实际内容。区分用户说出口的话、独立旁白、括号内动作、环境描述和内心内容；角色只能知道自己能看见、听见、亲历或被明确告知的事。不要读心，不要把旁白里的称呼当成用户对角色的称呼或关系确认。不要为了证明记忆而罗列旧事。',
+      '【语言风格去模板化】表达必须从角色卡中的年龄感、成长环境、教育经历、职业、性格、关系阶段和个人措辞自然生成。禁止默认可爱化、幼态化、猫塑化、撒娇化或网络萌系口癖；除非角色卡明确如此且当前语境适合，不使用“喵”、叠字卖萌、宝宝腔、哈基米式语气、无意义颜文字、密集 emoji、刻意软糯尾音或短视频热梗。禁止每句都加语气词、波浪号、括号动作或甜腻称呼。不要把所有角色写成同一种活泼、黏人、讨好型中文网聊人格。用词、句长、停顿、直接程度和情绪浓度应有角色差异；普通对话自然说话，不刻意表演。',
+      '【引用、删除与撤回的语义】引用内容是被回复的历史上下文，不等于用户本轮重新说出、认可或重复下达的指令；先识别引用作者和原意，再回应用户当前新增的话。引用中的事实仍须判断来源与可信度。已删除消息不在上下文中，不得猜测或补写。已撤回消息只表示发送者撤回过一条消息，撤回正文不可用；不得引用、复述、推测或追问其原文。若用户是在询问删除/撤回操作本身，直接回应操作结果，不把它当成剧情事件。',
       '【连续性】保持人物、地点、时间、物品、关系、承诺和事件结果一致。不得重复已经完成的情节，不得让不在场或不知情的人突然知情。线上与线下记录可属于同一时间线，但要按来源、时间和实际参与者区分。'
     ].filter(Boolean).join('\n\n');
   }
@@ -16324,13 +16420,13 @@ function formatTime(v){const d=new Date(v||Date.now());return String(d.getHours(
     return [
       '【唯一输出协议】只返回一个可解析 JSON 对象，不得附加 Markdown、代码围栏、解释或对象外文字。结构：{"messages":[{"type":"text","text":"角色实际说出的话"}],"heart":"","relationship_updates":[]}。messages 必须是数组；type 仅允许 text、voice'+(narration?'、narration':'')+'；narration 仅在独立旁白开关开启时允许。可选撤回对象为 {"type":"retract","target":"last"}，只在确有撤回必要时使用。普通消息通常 1–4 条，最多 6 条；每条必须有独立表达价值，禁止拆句灌水。',
       '【心声】heart 是角色私下的即时念头，不是对用户说的话，不是旁白或分析。只写确实存在的一点念头；没有就返回空字符串。不得复述台词、旧心声或编造关系进展。',
-      '【关系网增量】relationship_updates 必须为数组。仅记录本轮明确发生或明确纠正的人物关系事实。每项字段：name、relation、detail、weight、evidence。证据必须是本轮可核对的原话或消息 ID。称呼、玩笑、语气、假设、梦境、愿望、计划、角色扮演情境和未发生事件不能单独证明现实关系。不得推断亲属、恋爱、婚姻、敌友等身份。已有关系不重复；无直接证据时返回 []；最多 12 项。',
+      '【关系网增量与旧记录维护】relationship_updates 必须为数组。每轮都要把本轮明确出现的人物关系事实与下方现有关系网逐项比对；不只寻找新人物，也要检查旧人物是否出现了新信息、关系称谓纠正、身份澄清、关系变化或新的共同经历。若已有同一人物，优先更新该旧记录，不要因为证据文本变了就另建重复人物；只有确实是不同的人，或同名人物无法消歧时，才新建/暂不更新。每项字段：name、relation、detail、weight、evidence；可选 relationshipId/targetType/targetId 仅在现有快照能明确对应时填写。证据必须是本轮可核对的用户原话或消息 ID，尽量引用足以定位的短原句。新增事实追加到 detail/evidence，不覆盖仍然成立的旧事实；明确纠正时才修正旧字段；关系发生变化时保留变化前后的时间顺序，不把历史关系抹掉。称呼、玩笑、语气、假设、梦境、愿望、计划、角色扮演情境和未发生事件不能单独证明现实关系。不得推断亲属、恋爱、婚姻、敌友等身份。没有可核验证据时返回 []；最多 12 项。',
       '【提交前校验】核对角色身份、用户自主权、事实来源、人物关系、语言选择、时间连续性、消息类型和 JSON 格式。只返回 JSON。'
     ].join('\n\n');
   }
   function buildRelationshipOutputPrompt(role){
     let existing=[];
-    try{const archive=safe(localStorage.getItem(ARCHIVE_KEY)||'{}',{}),roleId=String(role?.id||'');const card=(Array.isArray(archive?.characters)?archive.characters:[]).find(x=>String(x?.id??x?.characterId??x?.uuid??'')===roleId)||(/^legacy-character-(\d+)$/.test(roleId)?archive.characters?.[Number(roleId.match(/^legacy-character-(\d+)$/)[1])]:null);const rows=Array.isArray(card?.relationships)?card.relationships:(Array.isArray(role?.raw?.relationships)?role.raw.relationships:[]);existing=rows.filter(x=>x&&String(x.name||'').trim()).slice(0,80).map(x=>({name:String(x.name),relation:String(x.relation||''),detail:String(x.detail||''),evidence:String(x.evidence||'')}));}catch(_){}
+    try{const archive=safe(localStorage.getItem(ARCHIVE_KEY)||'{}',{}),roleId=String(role?.id||'');const card=(Array.isArray(archive?.characters)?archive.characters:[]).find(x=>String(x?.id??x?.characterId??x?.uuid??'')===roleId)||(/^legacy-character-(\d+)$/.test(roleId)?archive.characters?.[Number(roleId.match(/^legacy-character-(\d+)$/)[1])]:null);const rows=Array.isArray(card?.relationships)?card.relationships:(Array.isArray(role?.raw?.relationships)?role.raw.relationships:[]);existing=rows.filter(x=>x&&String(x.name||'').trim()).slice(0,80).map(x=>({id:String(x.id||''),name:String(x.name),relation:String(x.relation||''),detail:String(x.detail||''),evidence:String(x.evidence||''),targetType:String(x.targetType||'custom'),targetId:String(x.targetId||'')}));}catch(_){}
     return '【现有关系网快照｜只用于识别已有关系、避免重复，不是本轮证据】\n'+JSON.stringify(existing,null,2);
   }
   function buildHeartPrompt(role){
@@ -16431,15 +16527,16 @@ function formatTime(v){const d=new Date(v||Date.now());return String(d.getHours(
           const evidenceMatches=sameName.filter(item=>evidenceKey&&normalizeEvidence(item?.evidence||'')===evidenceKey);
           if(evidenceMatches.length===1)existing=evidenceMatches[0];
         }
-        // Do not reuse a legacy record merely because its display name is unique.
-        // A later update may describe a different person with the same name. Without
-        // a stable target/record ID or matching evidence, create a separate record.
+        // When no stable target ID exists, a unique exact-name match is the best
+        // available identity key. Reuse it so new evidence enriches the old record
+        // instead of creating a duplicate. If the same name is ambiguous, do not guess.
+        if(!existing&&targetType==='custom'&&sameName.length===1)existing=sameName[0];
 
         if(existing){
           let touched=false;
           if(relation&&relation!==String(existing.relation||'')){existing.relation=relation;touched=true;}
-          if(detail&&!String(existing.detail||'').includes(detail)){existing.detail=[String(existing.detail||'').trim(),detail].filter(Boolean).join('；').slice(-800);touched=true;}
-          if(evidence&&!String(existing.evidence||'').includes(evidence)){existing.evidence=[String(existing.evidence||'').trim(),evidence].filter(Boolean).join('；').slice(-360);touched=true;}
+          if(detail&&!String(existing.detail||'').split(/[；\n]+/).some(part=>normalizeEvidence(part)===normalizeEvidence(detail))){existing.detail=[String(existing.detail||'').trim(),detail].filter(Boolean).join('；').slice(-800);touched=true;}
+          if(evidence&&!String(existing.evidence||'').split(/[；\n]+/).some(part=>normalizeEvidence(part)===normalizeEvidence(evidence))){existing.evidence=[String(existing.evidence||'').trim(),evidence].filter(Boolean).join('；').slice(-360);touched=true;}
           if(targetType!=='custom'&&targetId&&(String(existing.targetType||'')!==targetType||String(existing.targetId||'')!==targetId)){existing.targetType=targetType;existing.targetId=targetId;touched=true;}
           const weight=Math.max(1,Math.min(5,Number(update.weight??update.importance)||Number(existing.weight)||3));
           if(weight!==Number(existing.weight||3)){existing.weight=weight;touched=true;}
@@ -16607,7 +16704,8 @@ function formatTime(v){const d=new Date(v||Date.now());return String(d.getHours(
         }
         if(m?.from==='me'&&m.imageData)return buildChatImagePayload(m,timeLabel);
         const body=historyContent(m);
-        return {role:m.from==='me'?'user':'assistant',content:timeLabel+body};
+        const quote=m?.retracted===true?'':(m?.replyTo&&String(m.replyTo.text||'').trim()?('【引用回复上下文｜原作者：'+String(m.replyTo.name|| (m.replyTo.from==='me'?'用户':'角色'))+'】\n'+String(m.replyTo.text).trim()+'\n【引用上下文结束】\n用户本条实际发送内容：\n'):'');
+        return {role:m.from==='me'?'user':'assistant',content:timeLabel+quote+body};
       })];
       const stream=localStorage.getItem('jing-api-stream')==='1';
       const savedTemperature=Number(localStorage.getItem('jing-api-temperature'));
@@ -19931,9 +20029,9 @@ ${JSON.stringify(roleHistory,null,2)}
   const safeGet = key => { try { return localStorage.getItem(key); } catch (_) { return null; } };
   const safeSet = (key, value) => { try { localStorage.setItem(key, String(value)); } catch (_) {} };
   const defs = [
-    {id:'clock', name:'时间日期', desc:'七种时间样式可选，实时预览并自定义桌面时钟。', icon:'◷', detail:'clockWidgetDetail', key:'jing-clock-widget-enabled', enabled:()=>safeGet('jing-clock-widget-enabled') !== 'false'},
-    {id:'badge', name:'电子吧唧', desc:'可翻转的收藏徽章，支持多种覆膜。', icon:'✿', detail:'eBadgeDetail', key:'jing-ebadge-enabled', enabled:()=>safeGet('jing-ebadge-enabled') === 'true'},
-    {id:'moment', name:'照片墙', desc:'经典、三图、四图胶囊、胶片照片共用一个照片墙入口；各样式可分别添加到桌面。', icon:'▧', detail:'momentWidgetDetail', key:'momentWidgetEnabled', enabled:()=>safeGet('momentWidgetEnabled') === 'true' || safeGet('jing-three-photo-enabled') === 'true' || safeGet('jing-four-photo-enabled') === 'true' || safeGet('jing-film-photo-enabled') === 'true'},
+    {id:'clock', name:'时间日期', desc:'七种时钟样式可选', icon:'◷', detail:'clockWidgetDetail', key:'jing-clock-widget-enabled', enabled:()=>safeGet('jing-clock-widget-enabled') !== 'false'},
+    {id:'badge', name:'电子吧唧', desc:'可翻转收藏徽章', icon:'✿', detail:'eBadgeDetail', key:'jing-ebadge-enabled', enabled:()=>safeGet('jing-ebadge-enabled') === 'true'},
+    {id:'moment', name:'照片墙', desc:'多种照片墙样式', icon:'▧', detail:'momentWidgetDetail', key:'momentWidgetEnabled', enabled:()=>safeGet('momentWidgetEnabled') === 'true' || safeGet('jing-three-photo-enabled') === 'true' || safeGet('jing-four-photo-enabled') === 'true' || safeGet('jing-film-photo-enabled') === 'true'},
       ];
   let settingsOrigin = 'editor';
   let returnFocus = null;
@@ -19962,8 +20060,8 @@ ${JSON.stringify(roleHistory,null,2)}
       toggle.classList.toggle('active', value);
     }
     if (def.id === 'clock') {
-      desk.classList.toggle('has-home-widget', value);
-      const node = $('homeClockWidget'); if (node) node.style.display = value ? '' : 'none';
+      if (typeof window.__jingClockSyncPageVisibility === 'function') window.__jingClockSyncPageVisibility();
+      else { desk.classList.toggle('has-home-widget', value); const node = $('homeClockWidget'); if (node) node.style.display = value ? '' : 'none'; }
     } else if (def.id === 'badge') {
       const node = $('eBadgeWidget'); if (node) node.style.display = value ? 'flex' : 'none';
       if (typeof window.updateBadgeVisibility === 'function') window.updateBadgeVisibility();
@@ -20047,7 +20145,7 @@ ${JSON.stringify(roleHistory,null,2)}
     if (!active.length) {
       const empty = document.createElement('div');
       empty.className = 'jdw-empty-state';
-      empty.innerHTML = '<strong>还没有添加小组件</strong><span>从上方组件库选择一个，添加到桌面后会显示在这里。</span>';
+      empty.innerHTML = '<strong>还没有添加小组件</strong><span>从组件库添加</span>';
       current.appendChild(empty);
     } else {
       active.forEach(def=>{
@@ -20274,7 +20372,7 @@ ${JSON.stringify(roleHistory,null,2)}
   document.getElementById('desktop')?.classList.remove('jdw-widgets-off');
   // The gesture hint stays explicit: two fingers pinch inward on blank desktop space.
   const hint=document.querySelector('#widgetEditOverlay .jdw-edit-subtitle');
-  if(hint)hint.textContent='桌面空白处双指向内捏合，即可打开组件管理。';
+  if(hint)hint.textContent='双指捏合管理组件';
 })();
 })();
 </script>
@@ -20305,6 +20403,33 @@ ${JSON.stringify(roleHistory,null,2)}
   $('clockStyleGrid')?.addEventListener('click',event=>{const btn=event.target.closest('[data-clock-style]');if(btn)applyClockStyle(btn.dataset.clockStyle,true)});
   document.querySelector('.clock-tone-setting')?.addEventListener('click',event=>{const btn=event.target.closest('[data-clock-tone]');if(!btn)return;const style=validStyle(localStorage.getItem(styleKey)||'7');setTone(style,btn.dataset.clockTone,true);window.__jingRenderWidgetEditor?.();});
   updateExtras();setInterval(updateExtras,15000);
+})();
+</script>
+<script id="jing-clock-mini-music-bridge-v1">
+(()=>{
+ 'use strict';
+ const $=id=>document.getElementById(id), audio=$('jmAudio');
+ const title=$('homeClockMiniTitle'),artist=$('homeClockMiniArtist'),cover=$('homeClockMiniCover'),play=$('homeClockMiniPlay');
+ if(!audio||!title||!artist||!cover||!play)return;
+ const icon=(playing)=>playing?'M7 5h4v14H7zM14 5h4v14h-4z':'M8 5l11 7-11 7z';
+ function sync(){
+  const t=$('jmMiniTitle')?.textContent?.trim()||'尚未播放';
+  const a=$('jmMiniArtist')?.textContent?.trim()||'打开音乐选择歌曲';
+  title.textContent=t;artist.textContent=a;
+  const src=$('jmMiniCover')?.style.backgroundImage||'';
+  cover.style.backgroundImage=src;cover.textContent=src?'':'♫';
+  const playing=!audio.paused&&!audio.ended;
+  play.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+icon(playing)+'"/></svg>';
+  play.setAttribute('aria-label',playing?'暂停音乐':'播放音乐');
+ }
+ play.addEventListener('click',e=>{e.stopPropagation();const screen=$('jingMusicScreen');if(title.textContent==='尚未播放'&&screen)screen.classList.add('open');$('jmMiniPlay')?.click();setTimeout(sync,80)});
+ $('homeClockMiniNext')?.addEventListener('click',e=>{e.stopPropagation();$('jmMiniNext')?.click();setTimeout(sync,180)});
+ const open=()=>{const screen=$('jingMusicScreen');if(screen){screen.classList.add('open');$('jmMiniOpen')?.click();}};
+ title.addEventListener('click',open);artist.addEventListener('click',open);cover.addEventListener('click',open);
+ const source=$('jmMiniPlayer');if(source&&window.MutationObserver){new MutationObserver(sync).observe(source,{subtree:true,childList:true,attributes:true,characterData:true});}
+ ['playing','pause','ended','loadedmetadata','emptied'].forEach(ev=>audio.addEventListener(ev,sync));
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});
+ sync();setInterval(sync,1200);
 })();
 </script>
 <!-- 心声弹窗 -->
